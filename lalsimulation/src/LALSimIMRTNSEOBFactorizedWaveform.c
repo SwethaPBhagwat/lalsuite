@@ -53,17 +53,111 @@
  */
 #define ninty4by3etc 18.687902694437592603
 
+
+static inline REAL8 XLALCalculateA5( REAL8 eta );
+
+static inline REAL8 XLALCalculateA6( REAL8 eta );
+
 static
 REAL8 XLALCalculateEOBD( REAL8    r,
                          REAL8	eta) UNUSED;
 
 
+/**
+ * Calculates the a5 parameter in the A potential function in EOBNRv2
+ */
+static inline
+REAL8 XLALCalculateA5( const REAL8 eta /**<< Symmetric mass ratio */
+                     )
+{
+  return - 5.82827 - 143.486 * eta + 447.045 * eta * eta;
+}
 
+/**
+ * Calculates the a6 parameter in the A potential function in EOBNRv2
+ */
+static inline
+REAL8 XLALCalculateA6( const REAL8 UNUSED eta /**<< Symmetric mass ratio */
+                     )
+{
+  return 184.0;
+}
 
 
 /**
- * This function calculates the EOB A function 
+ * Function to pre-compute the coefficients in the EOB A potential function
  */
+//UNUSED static
+//int XLALCalculateEOBACoefficients(
+//          EOBACoefficients * const coeffs, /**<< A coefficients (populated in function) */
+//          const REAL8              eta     /**<< Symmetric mass ratio */
+//          )
+//{
+//  REAL8 eta2, eta3;
+//  REAL8 a4, a5, a6;
+
+//  eta2 = eta*eta;
+//  eta3 = eta2 * eta;
+
+  /* Note that the definitions of a5 and a6 DO NOT correspond to those in the paper */
+  /* Therefore we have to multiply the results of our a5 and a6 finctions by eta. */
+
+//  a4 = ninty4by3etc * eta;
+//  a5 = XLALCalculateA5( eta ) * eta;
+//  a6 = XLALCalculateA6( eta ) * eta;
+
+//  coeffs->n4 =  -64. + 12.*a4 + 4.*a5 + a6 + 64.*eta - 4.*eta2;
+//  coeffs->n5 = 32. -4.*a4 - a5 - 24.*eta;
+//  coeffs->d0 = 4.*a4*a4 + 4.*a4*a5 + a5*a5 - a4*a6 + 16.*a6
+//             + (32.*a4 + 16.*a5 - 8.*a6) * eta + 4.*a4*eta2 + 32.*eta3;
+//  coeffs->d1 = 4.*a4*a4 + a4*a5 + 16.*a5 + 8.*a6 + (32.*a4 - 2.*a6)*eta + 32.*eta2 + 8.*eta3;
+//  coeffs->d2 = 16.*a4 + 8.*a5 + 4.*a6 + (8.*a4 + 2.*a5)*eta + 32.*eta2;
+//  coeffs->d3 = 8.*a4 + 4.*a5 + 2.*a6 + 32.*eta - 8.*eta2;
+//  coeffs->d4 = 4.*a4 + 2.*a5 + a6 + 16.*eta - 4.*eta2;
+//  coeffs->d5 = 32. - 4.*a4 - a5 - 24. * eta;
+
+//  return XLAL_SUCCESS;
+//}
+
+/**
+ * This function calculates the EOB A function which using the pre-computed
+ * coefficients which should already have been calculated.
+ */
+//static
+//REAL8 XLALCalculateEOBA( const REAL8 r,                     /**<< Orbital separation (in units of total mass M) */
+//                         EOBACoefficients * restrict coeffs /**<< Pre-computed coefficients for the A function */
+//                       )
+//{
+
+//  REAL8 r2, r3, r4, r5;
+//  REAL8 NA, DA;
+
+  /* Note that this function uses pre-computed coefficients,
+   * and assumes they have been calculated. Since this is a static function,
+   * so only used here, I assume it is okay to neglect error checking
+   */
+
+//  r2 = r*r;
+//  r3 = r2 * r;
+// r4 = r2*r2;
+//  r5 = r4*r;
+
+
+//  NA = r4 * coeffs->n4
+//     + r5 * coeffs->n5;
+
+//  DA = coeffs->d0
+//     + r  * coeffs->d1
+//     + r2 * coeffs->d2
+//     + r3 * coeffs->d3
+//    + r4 * coeffs->d4
+//     + r5 * coeffs->d5;
+
+//  return NA/DA;
+//}
+
+
+
 
 static
 REAL8 XLALCalculateEOBA( const REAL8 r, 
@@ -358,6 +452,129 @@ REAL8 XLALCalculateEOBd2Adu2( const REAL8 r, const REAL8 eta                    
 
 
 
+
+
+
+
+/**
+ * Calculated the derivative of the EOB A function with respect to
+ * r, using the pre-computed A coefficients
+ */
+//static//
+//REAL8 XLALCalculateEOBdAdr( const REAL8 r,                     /**<< Orbital separation (in units of total mass M) */
+//                            EOBACoefficients * restrict coeffs /**<< Pre-computed coefficients for the A function */
+//                          )
+//{
+//  REAL8 r2, r3, r4, r5;
+
+//  REAL8 NA, DA, dNA, dDA, dA;
+
+//  r2 = r*r;
+ // r3 = r2 * r;
+//  r4 = r2*r2;
+//  r5 = r4*r;
+
+//  NA = r4 * coeffs->n4
+//     + r5 * coeffs->n5;
+//
+//  DA = coeffs->d0
+//     + r  * coeffs->d1
+//     + r2 * coeffs->d2
+//     + r3 * coeffs->d3
+//     + r4 * coeffs->d4
+//     + r5 * coeffs->d5;
+
+//  dNA = 4. * coeffs->n4 * r3
+//      + 5. * coeffs->n5 * r4;
+
+//  dDA = coeffs->d1
+//      + 2. * coeffs->d2 * r
+//      + 3. * coeffs->d3 * r2
+//      + 4. * coeffs->d4 * r3
+//     + 5. * coeffs->d5 * r4;
+
+//  dA = dNA * DA - dDA * NA;
+
+//  return dA / (DA*DA);
+//}
+
+
+
+//static
+//REAL8 XLALCalculateEOBdAdr( const REAL8 r, const REAL8 eta                     /**<< Orbital separation (in units of total mass M) */
+                          //  EOBACoefficients * restrict coeffs /**<< Pre-computed coefficients for the A function */
+//                          )
+//{
+//  REAL8 u,u2, u3, u4, u5,logu;
+//  REAL8 dn1,dd1,dd2,dd3,dd4,dd5;
+//  REAL8 n1,d1,d2,d3,d4,d5;
+//  REAL8 a5,a6,a5tot,a6tot,a5tot2,pi2,eta2,pi4;
+//  REAL8 A,Num,Den,dNum,dDen,prefactor,dA_u;
+
+
+//  u=1./r;
+//  logu=log(u);
+//  pi2=LAL_PI*LAL_PI;
+//  pi4=pi2*pi2;
+//  eta2=eta*eta;
+//  a5 =  23.5;
+//  a6 = -122.+147.*(1.-4.*eta);
+//  a5tot  = a5  + 64./5.*logu;
+//  a6tot  = a6  + (-7004./105. - 144./5.*eta)*logu;
+//  a5tot2 = a5tot*a5tot;
+//  u2=u*u;
+//  u3=u2*u;
+//  u4=u2*u2;
+//  u5=u2*u3;
+
+//  n1  = (-3.*(-512. - 32.*eta2 + eta*(3520. + 32.*a5tot + 8.*a6tot - 123.*pi2)))/(-768. + eta*(3584. + 24.*a5tot - 123.*pi2));
+
+//  d1 = (eta*(-3392. - 48.*a5tot - 24.*a6tot + 96.*eta + 123.*pi2))/(-768. + eta*(3584. + 24.*a5tot - 123.*pi2));
+//  d2 =  (2.*eta*(-3392. - 48.*a5tot - 24.*a6tot + 96.*eta + 123.*pi2))/(-768. + eta*(3584. + 24.*a5tot - 123.*pi2));
+//  d3 = (-2.*eta*(6016. + 48.*a6tot + 3392.*eta + 24.*a5tot*(4. + eta) - 246.*pi2 - 123.*eta*pi2))/(-768. + eta*(3584. + 24.*a5tot - 123.*pi2));
+//  d4 = -(eta*(-4608.*a6tot*(-4. + eta) + a5tot*(36864. + eta*(72192. - 2952.*pi2)) + eta*(2048.*(5582. + 9.*eta) - 834432.*pi2 + 15129.*pi4)))/(96.*(-768. + eta*(3584.+ 24.*a5tot - 123.*pi2)));
+//  d5 = (eta*(-24.*a6tot*(1536. + eta*(-3776. + 123.*pi2)) + eta*(-2304.*a5tot2 + 96.*a5tot*(-3392. + 123.*pi2) - (-3776. + 123.*pi2)*(-3008. - 96.*eta + 123.*pi2))))/(96.*(-768. + eta*(3584. + 24.*a5tot - 123.*pi2)));
+
+
+ // Num = 1.+ (u * n1);
+
+ // Den = 1.+
+   //  + u  * d1
+   //  + u2 * d2
+    // + u3 * d3
+    // + u4 * d4
+     //+ u5 * d5;
+
+//  A=Num/Den;
+//  dn1 = (160.*eta*(-828672. - 32256.*eta2 + 756.*eta*(-768. + eta*(3584. + 24.*a5 - 123.*pi2)) + eta*(5006848. + 42024.*a5 + 8064.*a6 - 174045.*pi2)))/(7.*pow(1536*logu*eta + 5.*(-768. + eta*(3584. + 24.*a5 - 123.*pi2)),2.)*u);
+
+//  dd1 = (160.*eta*(-828672. - 32256.*eta2 + 756.*eta*(-768. + eta*(3584. + 24.*a5 - 123.*pi2)) + eta*(5006848. + 42024.*a5 + 8064.*a6 - 174045.*pi2)))/(7.*pow(1536.*logu*eta + 5.*(-768. + eta*(3584. + 24.*a5 - 123.*pi2)),2.)*u);
+
+//  dd2 = (320.*eta*(-828672. - 32256.*eta2 + 756.*eta*(-768. + eta*(3584. + 24.*a5 - 123.*pi2)) + eta*(5006848. + 42024.*a5 + 8064.*a6 - 174045.*pi2)))/(7.*pow(1536.*logu*eta + 5.*(-768. + eta*(3584. + 24.*a5 - 123.*pi2)),2.)*u);
+
+//  dd3 = (640.*eta*(-828672. - 32256.*eta2 + 756.*eta*(-768. + eta*(3584. + 24.*a5 - 123.*pi2)) + eta*(5006848. + 42024.*a5 + 8064.*a6 - 174045.*pi2)))/(7.*pow(1536.*logu*eta + 5.*(-768. + eta*(3584. + 24.*a5 - 123.*pi2)),2.)*u);
+
+//  dd4 = (-320.*(-4. + eta)*eta*(-828672. - 32256.*eta2 + 756.*eta*(-768. + eta*(3584. + 24.*a5 - 123.*pi2)) + eta*(5006848. + 42024.*a5 + 8064.*a6 - 174045.*pi2)))/(7.*pow(1536.*logu*eta + 5.*(-768. + eta*(3584. + 24.*a5 - 123.*pi2)),2.)*u);
+
+//  dd5 = (eta*(-8400.*eta*(-24.*(a6 - (4.*logu*(1751. + 756.*eta))/105.)*(1536. + eta*(-3776. + 123.*pi2))+ eta*(-2304.*pow(a5 + (64.*logu)/5.,2.) + 96.*(a5 + (64.*logu)/5.)*(-3392. + 123.*pi2) - (-3776. + 123.*pi2)*(-32.*(94. + 3.*eta) + 123.*pi2)))- (1536.*logu*eta + 5.*(-768. + eta*(3584. + 24.*a5 - 123.*pi2)))*(4128768.*logu*eta + 5.*(-2689536. + eta*(11170624. + 64512.*a5 - 380685.*pi2) - 756.*eta*(1536. + eta*(-3776. + 123.*pi2))))))/(2625.*pow(-768. + eta*(3584. + 24.*(a5 + (64.*logu)/5.) - 123.*pi2),2.)*u);
+
+ //First derivative
+//  dNum  = dn1*u + n1;
+//  dDen  = d1 + u*(dd1 + 2*d2) + u2*(dd2 + 3*d3) + u3*(dd3 + 4*d4) + u4*(dd4 + 5*d5) + dd5*u5;
+
+// Derivative of A function with respect to u
+//  prefactor = A/(Num*Den);
+//  dA_u = prefactor*(dNum*Den - dDen*Num);
+
+// Derivative of A w
+
+
+
+//  return -u2*dA_u;
+//}
+
+
+
 /**
  * Calculate the EOB D function.
  */
@@ -412,8 +629,8 @@ REAL8 XLALEffectiveHamiltonian( const REAL8 eta,          /**<< Symmetric mass r
  * using XLALModifyFacWaveformCoefficients(). THe non-spinning parts of these
  * coefficients can be found in Pan et al, arXiv:1106.1021v1 [gr-qc].
  */
-UNUSED static int XLALSimIMREOBCalcFacWaveformCoefficients(
-          FacWaveformCoeffs * const coeffs, /**<< Structure containing coefficients (populated in function) */
+UNUSED static int XLALSimIMRTNSEOBCalcFacWaveformCoefficients(
+          TNSFacWaveformCoeffs * const coeffs, /**<< Structure containing coefficients (populated in function) */
           const REAL8               eta     /**<< Symmetric mass ratio */
           )
 {
@@ -450,7 +667,7 @@ UNUSED static int XLALSimIMREOBCalcFacWaveformCoefficients(
 
   /* Initialize all coefficients to zero */
   /* This is important, as we will not set some if dM is zero */
-  memset( coeffs, 0, sizeof( FacWaveformCoeffs ) );
+  memset( coeffs, 0, sizeof( TNSFacWaveformCoeffs ) );
 
 
   /* l = 2 */
@@ -525,6 +742,13 @@ UNUSED static int XLALSimIMREOBCalcFacWaveformCoefficients(
     coeffs->rho33v7 = (5297.*a)/2970. + a*a2/3.;
     coeffs->rho33v8 = -57566572157./8562153600.;
     coeffs->rho33v8l = 13./3.;
+
+    coeffs->rho33v10 = 903823148417327./30566888352000.;
+    coeffs->rho33v10l = 87347./13860.;
+
+
+
+
   }
 
   coeffs->delta32vh3 = (10. + 33.*eta)/(-15.*m1Plus3eta);
@@ -565,6 +789,10 @@ UNUSED static int XLALSimIMREOBCalcFacWaveformCoefficients(
     coeffs->rho31v7  = (-2579.*a)/5346. + a*a2/9.;
     coeffs->rho31v8  = 2606097992581./4854741091200.;
     coeffs->rho31v8l = 169./567.;
+
+
+   coeffs->rho31v10 = 430750057673539./297110154781440.;
+   coeffs->rho31v10l = -1313./224532.;
   }
 
   /* l = 4 */
@@ -582,6 +810,9 @@ UNUSED static int XLALSimIMREOBCalcFacWaveformCoefficients(
   coeffs->rho44v6 = 16600939332793./1098809712000. + (217.*a2)/3960.;
   coeffs->rho44v6l = - 12568./3465.;
 
+  coeffs->rho44v8 = 845198./190575.;
+  coeffs->rho44v8l= -172066910136202271./19426955708160000.;
+
   if ( dM2 )
   {
     coeffs->delta43vh3 = (486. + 4961.*eta)/(810.*(1. - 2.*eta));
@@ -594,6 +825,10 @@ UNUSED static int XLALSimIMREOBCalcFacWaveformCoefficients(
     coeffs->rho43v5  = (-12113.*a)/6160.;
     coeffs->rho43v6  = 1664224207351./195343948800.;
     coeffs->rho43v6l = - 1571./770.;
+
+    coeffs->rho43v8 = -2465107182496333./460490801971200.;
+    coeffs ->rho43v8l = -174381./67760;
+
   }
 
   coeffs->delta42vh3 = (7.*(1. + 6.*eta))/(-15.*m1Plus3eta);
@@ -608,6 +843,9 @@ UNUSED static int XLALSimIMREOBCalcFacWaveformCoefficients(
   coeffs->rho42v6  = 848238724511./219761942400. + (2323.*a2)/3960.;
   coeffs->rho42v6l = - 3142./3465.;
 
+  coeffs->rho42v8 = -12864377174485679./19426955708160000.;
+  coeffs -> rho42v8l =300061./381150.;
+
   if ( dM2 )
   {
     coeffs->delta41vh3 = (2. + 507.*eta)/(10.*(1. - 2.*eta));
@@ -620,6 +858,10 @@ UNUSED static int XLALSimIMREOBCalcFacWaveformCoefficients(
     coeffs->rho41v5  = (-20033.*a)/55440. - (5*a*a2)/6.;
     coeffs->rho41v6  = 1227423222031./1758095539200.;
     coeffs->rho41v6l = - 1571./6930.;
+
+
+   coeffs->rho41v8 = -9584392078751453./37299754959667200.;
+   coeffs->rho41v8l= 67553./261360.;
   }
 
   /* l = 5 */
@@ -631,6 +873,11 @@ UNUSED static int XLALSimIMREOBCalcFacWaveformCoefficients(
     coeffs->rho55v3 = (-2.*a)/3.;
     coeffs->rho55v4 = -3353747./2129400. + a2/2.;
     coeffs->rho55v5 = - 241. * a / 195.;
+
+    coeffs->rho55v6= 190606537999247./11957879934000.;
+    coeffs -> rho55v6l = -1546./429.;
+    coeffs ->rho55v8 = -1213641959949291437./118143853747920000.;
+    coeffs ->rho55v8l = 376451./83655.;
   }
 
   coeffs->delta54vh3 = 8./15.;
@@ -641,6 +888,10 @@ UNUSED static int XLALSimIMREOBCalcFacWaveformCoefficients(
   coeffs->rho54v3 = (-2.*a)/15.;
   coeffs->rho54v4 = -16213384./15526875. + (2.*a2)/5.;
 
+ 
+  coeffs->rho54v6 = 6704294638171892./653946558890625.;
+  coeffs ->rho54v6l = -24736./10725.;
+   
   if ( dM2 )
   {
     coeffs->delta53vh3 = 31./70.;
@@ -649,6 +900,12 @@ UNUSED static int XLALSimIMREOBCalcFacWaveformCoefficients(
     coeffs->rho53v3 = (-2.*a)/3.;
     coeffs->rho53v4 = -410833./709800. + a2/2.;
     coeffs->rho53v5 = - 103.*a/325.;
+
+
+    coeffs->rho53v6 =7618462680967./1328653326000.;
+    coeffs->rho53v6l=-4638./3575.;
+    coeffs->rho53v8= -77082121019870543./39381284582640000.;
+    coeffs->rho53v8l=2319./1859.;
   }
 
   coeffs->delta52vh3 = 4./15.;
@@ -659,6 +916,9 @@ UNUSED static int XLALSimIMREOBCalcFacWaveformCoefficients(
   coeffs->rho52v3 = (-2.*a)/15.;
   coeffs->rho52v4 = -7187914./15526875. + (2.*a2)/5.;
 
+  coeffs->rho52v6 = 1539689950126502./653946558890625.;
+  coeffs->rho52v6l = -6184./10725.; 
+
   if ( dM2 )
   {
     coeffs->delta51vh3 = 31./210.;
@@ -667,6 +927,12 @@ UNUSED static int XLALSimIMREOBCalcFacWaveformCoefficients(
     coeffs->rho51v3 = (-2.*a)/3.;
     coeffs->rho51v4 = -31877./304200. + a2/2.;
     coeffs->rho51v5 = 139.*a/975.;
+
+    coeffs ->rho51v6 = 7685351978519./11957879934000.;
+    coeffs-> rho51v6l = -1546./10725.;
+    coeffs->rho51v8 = -821807362819271./10740350340720000.;
+    coeffs->rho51v8l= 22417./190125.;
+
   }
 
   /* l = 6 */
@@ -678,6 +944,9 @@ UNUSED static int XLALSimIMREOBCalcFacWaveformCoefficients(
   coeffs->rho66v3 = (-2.*a)/3.;
   coeffs->rho66v4 = -1025435./659736. + a2/2.;
 
+  coeffs -> rho66v6 =  610931247213169./36701493028200.;
+  coeffs ->rho66v6l = -3604./1001.;
+
   if ( dM2 )
   {
     coeffs->delta65vh3 = 10./21.;
@@ -685,6 +954,12 @@ UNUSED static int XLALSimIMREOBCalcFacWaveformCoefficients(
     coeffs->rho65v2 = (-185. + 838.*eta - 910.*eta2
                         + 220.*eta3)/(144.*(dM2 + 3.*eta2));
     coeffs->rho65v3 = - 2.*a/9.;
+
+
+
+    coeffs->rho65v4 =-5954065./54286848.;
+    coeffs ->rho65v6 = 67397117912549267./5798416452820992.;
+    coeffs -> rho65v6l = -22525./9009.;    
   }
 
   coeffs->delta64vh3 = 43./105.;
@@ -693,6 +968,11 @@ UNUSED static int XLALSimIMREOBCalcFacWaveformCoefficients(
                         + 133.*eta3)/(84.*(1. - 5.*eta + 5.*eta2));
   coeffs->rho64v3 = (-2.*a)/3.;
   coeffs->rho64v4 = -476887./659736. + a2/2.;
+  
+
+
+  coeffs-> rho64v6 = 180067034480351./24467662018800.;
+  coeffs-> rho64v6l = -14416./9009.;
 
   if ( dM2 )
   {
@@ -701,6 +981,12 @@ UNUSED static int XLALSimIMREOBCalcFacWaveformCoefficients(
     coeffs->rho63v2 = (-169. + 742.*eta - 750.*eta2
                         + 156.*eta3)/(144.*(dM2 + 3.*eta2));
     coeffs->rho63v3 = - 2.*a/9.;
+
+
+    coeffs->rho63v4 = -152153941./271434240.;
+    coeffs->rho63v6 = 116042497264681103./28992082264104960.;
+    coeffs-> rho63v6l = -901./1001.;
+
   }
 
   coeffs->delta62vh3 = 43./210.;
@@ -710,6 +996,11 @@ UNUSED static int XLALSimIMREOBCalcFacWaveformCoefficients(
   coeffs->rho62v3 = (-2.*a)/3.;
   coeffs->rho62v4 = -817991./3298680. + a2/2.;
 
+
+  coeffs->rho62v6 = 812992177581./453104852200.;
+  coeffs->rho62v6l = -3604./9009.;
+
+
   if ( dM2 )
   {
     coeffs->delta61vh3 = 2./21.;
@@ -717,6 +1008,12 @@ UNUSED static int XLALSimIMREOBCalcFacWaveformCoefficients(
     coeffs->rho61v2 = (-161. + 694.*eta - 670.*eta2
                         + 124.*eta3)/(144.*(dM2 + 3.*eta2));
     coeffs->rho61v3 = - 2. * a / 9.;
+
+
+
+    coeffs -> rho61v4 = -79192261./271434240.;
+    coeffs -> rho61v6 = 6277796663889319./28992082264104960.;
+    coeffs -> rho61v6l = -901./9009.;
   }
 
   /* l = 7 */
@@ -727,11 +1024,22 @@ UNUSED static int XLALSimIMREOBCalcFacWaveformCoefficients(
     coeffs->rho77v2 = (-906. + 4246.*eta - 4963.*eta2
                         + 1380.*eta3)/(714.*(dM2 + 3.*eta2));
     coeffs->rho77v3 = - 2.*a/3.;
+
+    
+    coeffs -> rho77v4 = -32358125./20986602.;
+    coeffs ->rho77v6 = 66555794049401803./3856993267327200;
+    coeffs ->rho77v6l = -11948./3315.;
   }
 
   coeffs->rho76v2 = (2144. - 16185.*eta + 37828.*eta2 - 29351.*eta3
                         + 6104.*eta2*eta2) / (1666.*(-1 + 7*eta - 14*eta2
                         + 7*eta3));
+
+
+
+
+  coeffs -> rho76v4 = -195441224./171390583.;
+
 
   if ( dM2 )
   {
@@ -740,11 +1048,21 @@ UNUSED static int XLALSimIMREOBCalcFacWaveformCoefficients(
     coeffs->rho75v2 = (-762. + 3382.*eta - 3523.*eta2
                         + 804.*eta3)/(714.*(dM2 + 3.*eta2));
     coeffs->rho75v3 = - 2.*a/3.;
+
+
+
+    coeffs ->rho75v4 = -17354227./20986602.;
+    coeffs ->rho75v6 = 192862646381533./22039961527584.;
+    coeffs ->rho75v6l = - 59740./32487.;
   }
 
   coeffs->rho74v2 = (17756. - 131805.*eta + 298872.*eta2 - 217959.*eta3
                         + 41076.*eta2*eta2) / (14994.*(-1. + 7.*eta - 14.*eta2
                         + 7.*eta3));
+
+
+ coeffs->rho74v4 = -2995755988./4627545741.;
+
 
   if ( dM2 )
   {
@@ -753,11 +1071,19 @@ UNUSED static int XLALSimIMREOBCalcFacWaveformCoefficients(
     coeffs->rho73v2 = (-666. + 2806.*eta - 2563.*eta2
                         + 420.*eta3)/(714.*(dM2 + 3.*eta2));
     coeffs->rho73v3 = - 2.*a/3.;
+
+
+    coeffs->rho73v4 = -7804375./20986602.;
+    coeffs->rho73v6 = 1321461327981547./428554807480800.;
+    coeffs -> rho73v6l = -35844./54145.;
   }
 
   coeffs->rho72v2 = (16832. - 123489.*eta + 273924.*eta2 - 190239.*eta3
                         + 32760.*eta2*eta2) /(14994.*(-1. + 7.*eta - 14.*eta2
                         + 7.*eta3));
+
+
+  coeffs->rho72v4 = -1625746984./4627545741.;
 
   if ( dM2 )
   {
@@ -766,6 +1092,13 @@ UNUSED static int XLALSimIMREOBCalcFacWaveformCoefficients(
     coeffs->rho71v2 = (-618. + 2518.*eta - 2083.*eta2
                         + 228.*eta3)/(714.*(dM2 + 3.*eta2));
     coeffs->rho71v3 = - 2.*a/3.;
+    
+  
+
+    coeffs ->rho71v4 = - 1055091./6995534.;
+    coeffs ->rho71v6 = 142228318411021./550999038189600.;
+    coeffs ->rho71v6l = -11948./162435.;
+
   }
 
   /* l = 8 */
@@ -774,44 +1107,61 @@ UNUSED static int XLALSimIMREOBCalcFacWaveformCoefficients(
                         + 12243.*eta2*eta2) / (2736.*(-1. + 7.*eta - 14.*eta2
                         + 7.*eta3));
 
+
+  coeffs->rho88v4 = -1.5337092502821381;
+
   if ( dM2 )
   {
     coeffs->rho87v2 = (23478. - 154099.*eta + 309498.*eta2 - 207550.*eta3
                         + 38920*eta2*eta2) / (18240.*(-1 + 6*eta - 10*eta2
                         + 4*eta3));
+
+    coeffs->rho87v4 = -1.175404252991305;
   }
 
   coeffs->rho86v2 = (1002. - 7498.*eta + 17269.*eta2 - 13055.*eta3
                         + 2653.*eta2*eta2) / (912.*(-1. + 7.*eta - 14.*eta2
                         + 7.*eta3));
 
+  coeffs -> rho86v4 = - 0.9061610303170207;
+
   if ( dM2 )
   {
     coeffs->rho85v2 = (4350. - 28055.*eta + 54642.*eta2 - 34598.*eta3
                         + 6056.*eta2*eta2) / (3648.*(-1. + 6.*eta - 10.*eta2
                         + 4.*eta3));
+
+    coeffs -> rho85v4 = -0.7220789990670207 ;
   }
 
   coeffs->rho84v2 = (2666. - 19434.*eta + 42627.*eta2 - 28965.*eta3
                         + 4899.*eta2*eta2) / (2736.*(-1. + 7.*eta - 14.*eta2
                         + 7.*eta3));
 
+  coeffs -> rho84v4 = -0.47652059150068155;
+
   if ( dM2 )
   {
     coeffs->rho83v2 = (20598. - 131059.*eta + 249018.*eta2 - 149950.*eta3
                         + 24520.*eta2*eta2) / (18240.*(-1. + 6.*eta - 10.*eta2
                         + 4.*eta3));
+
+   coeffs -> rho83v4 = -0.4196774909106648;
   }
 
   coeffs->rho82v2 = (2462. - 17598.*eta + 37119.*eta2 - 22845.*eta3
                         + 3063.*eta2*eta2) / (2736.*(-1. + 7.*eta - 14.*eta2
                         + 7.*eta3));
 
+  coeffs ->rho82v4 = -0.2261796441029474 ;
+
   if ( dM2 )
   {
     coeffs->rho81v2 = (20022. - 126451.*eta + 236922.*eta2 - 138430.*eta3
                         + 21640.*eta2*eta2) / (18240.*(-1. + 6.*eta - 10.*eta2
                         + 4.*eta3));
+
+    coeffs->rho81v4 = -0.26842133517043704 ;
   }
 
   /* All relevant coefficients should be set, so we return */
@@ -828,7 +1178,7 @@ UNUSED static int XLALSimIMREOBCalcFacWaveformCoefficients(
  * to calling this function.
  */
 UNUSED static int XLALSimIMREOBModifyFacWaveformCoefficients( 
-                                       FacWaveformCoeffs * const coeffs, /**<< Structure containing coefficients */
+                                       TNSFacWaveformCoeffs * const coeffs, /**<< Structure containing coefficients */
                                        const REAL8 eta                   /**<< Symmetric mass ratio */
                                      )
 {
@@ -860,7 +1210,8 @@ UNUSED static int XLALSimIMREOBModifyFacWaveformCoefficients(
 static REAL8
 nonKeplerianCoefficient(
                    REAL8Vector * restrict values, /**<< Dynamics r, phi, pr, pphi */
-                   const REAL8       eta        /**<< Symmetric mass ratio */
+                   const REAL8       eta         /**<< Symmetric mass ratio */
+                  // EOBACoefficients *coeffs       /**<< Pre-computed A coefficients */
                    )
 {
 
@@ -881,13 +1232,13 @@ nonKeplerianCoefficient(
  * The function returns XLAL_SUCCESS if everything works out properly,
  * otherwise XLAL_FAILURE will be returned.
  */
-UNUSED static int  XLALSimIMREOBGetFactorizedWaveform( 
+UNUSED static int  XLALSimIMRTNSEOBGetFactorizedWaveform( 
                                 COMPLEX16   * restrict hlm,    /**<< The value of hlm (populated by the function) */
                                 REAL8Vector * restrict values, /**<< Vector containing dynamics r, phi, pr, pphi for a given point */
                                 const REAL8 v,                 /**<< Velocity (in geometric units) */
                                 const INT4  l,                 /**<< Mode l */
                                 const INT4  m,                 /**<< Mode m */
-                                EOBParams   * restrict params  /**<< Structure containing pre-computed coefficients, etc. */
+                                TNSEOBParams   * restrict params  /**<< Structure containing pre-computed coefficients, etc. */
                                 )
 {
 
@@ -895,9 +1246,10 @@ UNUSED static int  XLALSimIMREOBGetFactorizedWaveform(
   INT4 status;
   INT4 i;
 
-  REAL8 eta;
-  REAL8 r, pr, pp, Omega, v2, vh, vh3, k, hathatk, eulerlogxabs;
+  REAL8 eta,pi,pi2,eta2;
+  REAL8 r, pr, pp, Omega, v2, vh, vh3,v3, k, hathatk, eulerlogxabs,v4,v5;
   REAL8 Hreal, Heff, Slm, deltalm, rholm, rholmPwrl;
+  REAL8 delta22_leading,delta21_leading,delta33_leading,delta31_leading,delta22_Num,delta21_Num,delta33_Num,delta31_Num,delta22_Den, delta21_Den, delta33_Den,delta31_Den;
   COMPLEX16 Tlm;
   COMPLEX16 hNewton;
   gsl_sf_result lnr1, arg1, z2;
@@ -906,7 +1258,7 @@ UNUSED static int  XLALSimIMREOBGetFactorizedWaveform(
   REAL8 vPhi;
 
   /* Pre-computed coefficients */
-  FacWaveformCoeffs *hCoeffs = params->hCoeffs;
+  TNSFacWaveformCoeffs *hCoeffs = params->hCoeffs;
 
   if ( abs(m) > (INT4) l )
   {
@@ -933,14 +1285,19 @@ UNUSED static int  XLALSimIMREOBGetFactorizedWaveform(
   pr = values->data[2];
   pp = values->data[3];
 
-  Heff  = XLALEffectiveHamiltonian( eta, r, pr, pp );
+  Heff  = XLALEffectiveHamiltonian( eta, r, pr, pp);
   Hreal = sqrt( 1.0 + 2.0 * eta * ( Heff - 1.0) );
   v2    = v * v;
+  v3  = v*v2;
+  v4 = v2*v2;
+  v5 = v3*v2;
   Omega = v2 * v;
   vh3   = Hreal * Omega;
   vh    = cbrt(vh3);
   eulerlogxabs = LAL_GAMMA + log( 2.0 * (REAL8)m * v );
-
+  pi=LAL_PI;
+  pi2=pi*pi;
+  eta2=eta*eta;
 
   /* Calculate the non-Keplerian velocity */
   /* given by Eq. (18) of Pan et al, PRD84, 124052(2011) */
@@ -953,7 +1310,7 @@ UNUSED static int  XLALSimIMREOBGetFactorizedWaveform(
   vPhi *= Omega;
 
   /* Calculate the newtonian multipole */
-  status = XLALSimIMREOBCalculateNewtonianMultipole( &hNewton, vPhi * vPhi, vPhi/Omega,
+  status = XLALSimIMRTNSEOBCalculateNewtonianMultipole( &hNewton, vPhi * vPhi, vPhi/Omega,
             values->data[1], (UINT4)l, m, params );
   if ( status == XLAL_FAILURE )
   {
@@ -990,15 +1347,32 @@ UNUSED static int  XLALSimIMREOBGetFactorizedWaveform(
   Tlm /= z2.val;
 
   /* Calculate the residue phase and amplitude terms */
+if (eta==0)
+   {
+	   deltalm=0.0;
+	   rholm=0.0;
+   }
+	//This is the point test limit 
+	//
+	//
+
+else
+ {	//dealing with "non-test-particle"
   switch( l )
   {
     case 2:
       switch( abs(m) )
       {
         case 2:
-          deltalm = vh3*(hCoeffs->delta22vh3 + vh3*(hCoeffs->delta22vh6
-            + vh*vh*(hCoeffs->delta22vh9*vh)))
-            + hCoeffs->delta22v5 *v*v2*v2 + hCoeffs->delta22v8 *v2*v2*v2*v2;
+		  // CHECKME : Changing to Pade resummed coefficients 
+
+          // deltalm = vh3*(hCoeffs->delta22vh3 + vh3*(hCoeffs->delta22vh6
+          //  + vh*vh*(hCoeffs->delta22vh9*vh)))
+          //  + hCoeffs->delta22v5 *v*v2*v2 + hCoeffs->delta22v8 *v2*v2*v2*v2;
+          delta22_leading=(7./3.)*v3;
+		  delta22_Num=(808920*eta*pi*v + 137388.*pi2*v2 + 35.*eta2*(136080. + (154975. - 1359276.*eta)*v2));
+		  delta22_Den=(808920.*eta*pi*v + 137388.*pi2*v2 + 35.*eta2*(136080. + (154975. + 40404.*eta)*v2));
+		  deltalm= delta22_leading *(delta22_Den/delta22_Den);
           rholm  = 1. + v2*(hCoeffs->rho22v2 + v*(hCoeffs->rho22v3
             + v*(hCoeffs->rho22v4
             + v*(hCoeffs->rho22v5 + v*(hCoeffs->rho22v6
@@ -1007,9 +1381,14 @@ UNUSED static int  XLALSimIMREOBGetFactorizedWaveform(
             + (hCoeffs->rho22v10 + hCoeffs->rho22v10l * eulerlogxabs)*v2)))))));
           break;
         case 1:
-          deltalm = vh3*(hCoeffs->delta21vh3 + vh3*(hCoeffs->delta21vh6
-            + vh*(hCoeffs->delta21vh7 + (hCoeffs->delta21vh9)*vh*vh)))
-            + hCoeffs->delta21v5*v*v2*v2 + hCoeffs->delta21v7*v2*v2*v2*v;
+         // deltalm = vh3*(hCoeffs->delta21vh3 + vh3*(hCoeffs->delta21vh6
+         //   + vh*(hCoeffs->delta21vh7 + (hCoeffs->delta21vh9)*vh*vh)))
+         //   + hCoeffs->delta21v5*v*v2*v2 + hCoeffs->delta21v7*v2*v2*v2*v;
+		  delta21_leading=(2./3.)*v3;
+		  delta21_Num=69020.*eta + 5992.*pi*v;
+		  delta21_Den=5992.*pi*v + 2456.*eta*(28.+493.*eta*v2);
+		  deltalm=delta21_leading*(delta21_Num/delta21_Den);
+
           rholm  = 1. + v*(hCoeffs->rho21v1
             + v*( hCoeffs->rho21v2 + v*(hCoeffs->rho21v3 + v*(hCoeffs->rho21v4
             + v*(hCoeffs->rho21v5 + v*(hCoeffs->rho21v6 + hCoeffs->rho21v6l*eulerlogxabs
@@ -1026,27 +1405,41 @@ UNUSED static int  XLALSimIMREOBGetFactorizedWaveform(
       switch (m)
       {
         case 3:
-          deltalm = vh3*(hCoeffs->delta33vh3 + vh3*(hCoeffs->delta33vh6 + hCoeffs->delta33vh9*vh3))
-            + hCoeffs->delta33v5*v*v2*v2 + hCoeffs->delta33v7*v2*v2*v2*v;
+          //deltalm = vh3*(hCoeffs->delta33vh3 + vh3*(hCoeffs->delta33vh6 + hCoeffs->delta3//3vh9*vh3))
+		  delta33_leading=(13./10.)*v3;
+		  delta33_Num = 1. + 94770.*pi*v/(566279.*eta);
+		  delta33_Den = delta33_Num + (80897.*eta*v2/3159.);
+		  deltalm=delta33_leading*(delta33_Num/delta33_Den);
+
+            //+ hCoeffs->delta33v5*v*v2*v2 + hCoeffs->delta33v7*v2*v2*v2*v;
           rholm  = 1. + v2*(hCoeffs->rho33v2 + v*(hCoeffs->rho33v3 + v*(hCoeffs->rho33v4
             + v*(hCoeffs->rho33v5 + v*(hCoeffs->rho33v6 + hCoeffs->rho33v6l*eulerlogxabs
             + v*(hCoeffs->rho33v7 + (hCoeffs->rho33v8 + hCoeffs->rho33v8l*eulerlogxabs)*v))))));
+          rholm=rholm+ ((hCoeffs->rho33v10 + hCoeffs->rho33v10l*eulerlogxabs)*v5*v5);
           break;
         case 2:
-          deltalm = vh3*(hCoeffs->delta32vh3 + vh*(hCoeffs->delta32vh4 + vh*vh*(hCoeffs->delta32vh6
-            + hCoeffs->delta32vh9*vh3)));
+         // deltalm = vh3*(hCoeffs->delta32vh3 + vh*(hCoeffs->delta32vh4 + vh*vh*(hCoeffs->delta32vh6
+           // + hCoeffs->delta32vh9*vh3)));
+		   
+		  deltalm = (v3*hCoeffs->delta32vh3)+(v3*v3*hCoeffs->delta32vh6);
           rholm  = 1. + v*(hCoeffs->rho32v
             + v*(hCoeffs->rho32v2 + v*(hCoeffs->rho32v3 + v*(hCoeffs->rho32v4 + v*(hCoeffs->rho32v5
             + v*(hCoeffs->rho32v6 + hCoeffs->rho32v6l*eulerlogxabs
             + (hCoeffs->rho32v8 + hCoeffs->rho32v8l*eulerlogxabs)*v2))))));
           break;
         case 1:
-          deltalm = vh3*(hCoeffs->delta31vh3 + vh3*(hCoeffs->delta31vh6
-            + vh*(hCoeffs->delta31vh7 + hCoeffs->delta31vh9*vh*vh)))
-            + hCoeffs->delta31v5*v*v2*v2;
+        //  deltalm = vh3*(hCoeffs->delta31vh3 + vh3*(hCoeffs->delta31vh6
+        //    + vh*(hCoeffs->delta31vh7 + hCoeffs->delta31vh9*vh*vh)))
+       //     + hCoeffs->delta31v5*v*v2*v2;
+	      delta31_leading = (13./30.)*v3;
+		  delta31_Num = 4641.*eta + 1690.*pi*v;
+		  delta31_Den = delta31_Num + 18207.*eta2*v2;
+		  deltalm=delta31_leading*(delta31_Num/delta31_Den);
+
           rholm  = 1. + v2*(hCoeffs->rho31v2 + v*(hCoeffs->rho31v3 + v*(hCoeffs->rho31v4
             + v*(hCoeffs->rho31v5 + v*(hCoeffs->rho31v6 + hCoeffs->rho31v6l*eulerlogxabs
             + v*(hCoeffs->rho31v7 + (hCoeffs->rho31v8 + hCoeffs->rho31v8l*eulerlogxabs)*v))))));
+          rholm=rholm+ ((hCoeffs->rho31v10 + hCoeffs->rho31v10l*eulerlogxabs)*v5*v5);
           break;
         default:
           XLAL_ERROR( XLAL_EINVAL );
@@ -1057,34 +1450,46 @@ UNUSED static int  XLALSimIMREOBGetFactorizedWaveform(
       switch (m)
       {
         case 4:
-          deltalm = vh3*(hCoeffs->delta44vh3 + hCoeffs->delta44vh6 *vh3)
-            + hCoeffs->delta44v5*v2*v2*v;
+          deltalm = v3*(hCoeffs->delta44vh3 + hCoeffs->delta44vh6 *v3);
+		 //deltalm = vh3*(hCoeffs->delta44vh3 + hCoeffs->delta44vh6 *vh3)
+		 //1034             + hCoeffs->delta44v5*v2*v2*v;
+		 //
           rholm  = 1. + v2*(hCoeffs->rho44v2
             + v*( hCoeffs->rho44v3 + v*(hCoeffs->rho44v4
             + v*(hCoeffs->rho44v5 + (hCoeffs->rho44v6
             + hCoeffs->rho44v6l*eulerlogxabs)*v))));
+          rholm=rholm + ((hCoeffs->rho44v8 + hCoeffs->rho44v8l*eulerlogxabs)*v4*v4);
           break;
         case 3:
-          deltalm = vh3*(hCoeffs->delta43vh3 + vh*(hCoeffs->delta43vh4
-            + hCoeffs->delta43vh6*vh*vh));
+          //deltalm = v3*(hCoeffs->delta43vh3 + vh*(hCoeffs->delta43vh4
+          //  + hCoeffs->delta43vh6*vh*vh));
+		  deltalm = (v3*hCoeffs->delta43vh3) + (v3*v3*hCoeffs->delta43vh6);
+
           rholm  = 1. + v*(hCoeffs->rho43v
             + v*(hCoeffs->rho43v2
             + v2*(hCoeffs->rho43v4 + v*(hCoeffs->rho43v5
             + (hCoeffs->rho43v6 + hCoeffs->rho43v6l*eulerlogxabs)*v))));
+          rholm=rholm + ((hCoeffs->rho43v8 + hCoeffs->rho43v8l*eulerlogxabs)*v4*v4);
           break;
         case 2:
-          deltalm = vh3*(hCoeffs->delta42vh3 + hCoeffs->delta42vh6*vh3);
-          rholm  = 1. + v2*(hCoeffs->rho42v2
+          //deltalm = vh3*(hCoeffs->delta42vh3 + hCoeffs->delta42vh6*vh3);
+          deltalm = (v3*hCoeffs->delta42vh3) + (v3*v3*hCoeffs->delta42vh6);
+
+		  rholm  = 1. + v2*(hCoeffs->rho42v2
             + v*(hCoeffs->rho42v3 + v*(hCoeffs->rho42v4 + v*(hCoeffs->rho42v5
             + (hCoeffs->rho42v6 + hCoeffs->rho42v6l*eulerlogxabs)*v))));
+            rholm=rholm + ((hCoeffs->rho42v8 + hCoeffs->rho42v8l*eulerlogxabs)*v4*v4);
           break;
         case 1:
-          deltalm = vh3*(hCoeffs->delta41vh3 + vh*(hCoeffs->delta41vh4
-            + hCoeffs->delta41vh6*vh*vh));
+       //   deltalm = vh3*(hCoeffs->delta41vh3 + vh*(hCoeffs->delta41vh4
+       //     + hCoeffs->delta41vh6*vh*vh));
+	      deltalm = (v3*hCoeffs->delta41vh3)+(v3*v3*+ hCoeffs->delta41vh6);
+
           rholm  = 1. + v*(hCoeffs->rho41v
             + v*(hCoeffs->rho41v2
             + v2*(hCoeffs->rho41v4 + v*(hCoeffs->rho41v5
             + (hCoeffs->rho41v6 +  hCoeffs->rho41v6l*eulerlogxabs)*v))));
+          rholm=rholm + ((hCoeffs->rho41v8 + hCoeffs->rho41v8l*eulerlogxabs)*v4*v4);
           break;
         default:
           XLAL_ERROR( XLAL_EINVAL );
@@ -1095,30 +1500,39 @@ UNUSED static int  XLALSimIMREOBGetFactorizedWaveform(
       switch (m)
       {
         case 5:
-          deltalm = hCoeffs->delta55vh3*vh3 + hCoeffs->delta55v5*v2*v2*v;
+          deltalm = hCoeffs->delta55vh3*v3;
           rholm  = 1. + v2*( hCoeffs->rho55v2
             + v*(hCoeffs->rho55v3 + v*(hCoeffs->rho55v4
             + v*(hCoeffs->rho55v5 + hCoeffs->rho55v6*v))));
+          rholm = rholm + (hCoeffs->rho55v6l*eulerlogxabs*v3*v3)+ ((hCoeffs->rho55v8 + hCoeffs->rho55v8l*eulerlogxabs)*v4*v4);
           break;
         case 4:
-          deltalm = vh3*(hCoeffs->delta54vh3 + hCoeffs->delta54vh4*vh);
+          deltalm =0.;
+			 // vh3*(hCoeffs->delta54vh3 + hCoeffs->delta54vh4*vh);
           rholm  = 1. + v2*(hCoeffs->rho54v2 + v*(hCoeffs->rho54v3
             + hCoeffs->rho54v4*v));
+          rholm=rholm + ((hCoeffs->rho54v6 + hCoeffs->rho54v6l*eulerlogxabs)*v3*v3);
           break;
         case 3:
-          deltalm = hCoeffs->delta53vh3 * vh3;
+          deltalm =0.;
+			 // hCoeffs->delta53vh3 * vh3;
           rholm  = 1. + v2*(hCoeffs->rho53v2
             + v*(hCoeffs->rho53v3 + v*(hCoeffs->rho53v4 + hCoeffs->rho53v5*v)));
+          rholm=rholm +  ((hCoeffs->rho53v6 + hCoeffs->rho53v6l*eulerlogxabs)*v3*v3) + ((hCoeffs->rho53v8 + hCoeffs->rho53v8l*eulerlogxabs)*v4*v4);
           break;
         case 2:
-          deltalm = vh3*(hCoeffs->delta52vh3 + hCoeffs->delta52vh4*vh);
+          deltalm = 0.;
+			  //vh3*(hCoeffs->delta52vh3 + hCoeffs->delta52vh4*vh);
           rholm  = 1. + v2*(hCoeffs->rho52v2 + v*(hCoeffs->rho52v3
             + hCoeffs->rho52v4*v));
+          rholm=rholm + ((hCoeffs->rho52v6 + hCoeffs->rho52v6l*eulerlogxabs)*v3*v3);
           break;
         case 1:
-          deltalm = hCoeffs->delta51vh3 * vh3;
+          deltalm = 0.;
+			  //hCoeffs->delta51vh3 * vh3;
           rholm  = 1. + v2*(hCoeffs->rho51v2
             + v*(hCoeffs->rho51v3 + v*(hCoeffs->rho51v4 + hCoeffs->rho51v5*v)));
+           rholm = rholm + ((hCoeffs->rho51v6 +hCoeffs->rho51v6l*eulerlogxabs)*v3*v3)+ ((hCoeffs->rho51v8 + hCoeffs->rho51v8l*eulerlogxabs)*v4*v4);
           break;
         default:
           XLAL_ERROR( XLAL_EINVAL );
@@ -1129,31 +1543,44 @@ UNUSED static int  XLALSimIMREOBGetFactorizedWaveform(
       switch (m)
       {
         case 6:
-          deltalm = hCoeffs->delta66vh3*vh3;
+          deltalm = 0.;
+			  //hCoeffs->delta66vh3*vh3;
           rholm  = 1. + v2*(hCoeffs->rho66v2 + v*(hCoeffs->rho66v3
             + hCoeffs->rho66v4*v));
+          rholm=rholm + ((hCoeffs->rho66v6 + hCoeffs->rho66v6l*eulerlogxabs)*v3*v3);
           break;
         case 5:
-          deltalm = hCoeffs->delta65vh3*vh3;
+          deltalm = 0.;
+		 // hCoeffs->delta65vh3*vh3;
           rholm  = 1. + v2*(hCoeffs->rho65v2 + hCoeffs->rho65v3*v);
+
+          rholm=rholm + ((hCoeffs->rho65v6 + hCoeffs->rho65v6l*eulerlogxabs)*v3*v3) + (hCoeffs->rho65v4 *v2 *v2);
           break;
         case 4:
-          deltalm = hCoeffs->delta64vh3 * vh3;
+          deltalm = 0.;
+			 // hCoeffs->delta64vh3 * vh3;
           rholm  = 1. + v2*(hCoeffs->rho64v2 + v*(hCoeffs->rho64v3
             + hCoeffs->rho64v4*v));
+          rholm=rholm + ((hCoeffs->rho64v6 + hCoeffs->rho64v6l*eulerlogxabs)*v3*v3);
           break;
         case 3:
-          deltalm = hCoeffs->delta63vh3 * vh3;
+          deltalm = 0.;
+			  //hCoeffs->delta63vh3 * vh3;
           rholm  = 1. + v2*(hCoeffs->rho63v2 + hCoeffs->rho63v3*v);
+          rholm=rholm + ((hCoeffs->rho63v6 + hCoeffs->rho63v6l*eulerlogxabs)*v3*v3) + (hCoeffs->rho63v4 *v2 *v2);
           break;
         case 2:
-          deltalm = hCoeffs->delta62vh3 * vh3;
+          deltalm = 0.;
+			 // hCoeffs->delta62vh3 * vh3;
           rholm  = 1. + v2*(hCoeffs->rho62v2 + v*(hCoeffs->rho62v3
             + hCoeffs->rho62v4 * v));
+          rholm=rholm + ((hCoeffs->rho62v6 + hCoeffs->rho62v6l*eulerlogxabs)*v3*v3);
           break;
         case 1:
-          deltalm = hCoeffs->delta61vh3 * vh3;
+          deltalm = 0.;
+		 // hCoeffs->delta61vh3 * vh3;
           rholm  = 1. + v2*(hCoeffs->rho61v2 + hCoeffs->rho61v3*v);
+          rholm=rholm + ((hCoeffs->rho61v6 + hCoeffs->rho61v6l*eulerlogxabs)*v3*v3) + (hCoeffs->rho61v4 *v2 *v2);
           break;
         default:
           XLAL_ERROR( XLAL_EINVAL );
@@ -1164,32 +1591,43 @@ UNUSED static int  XLALSimIMREOBGetFactorizedWaveform(
       switch (m)
       {
         case 7:
-          deltalm = hCoeffs->delta77vh3 * vh3;
+          deltalm = 0.;
+			 // hCoeffs->delta77vh3 * vh3;
           rholm   = 1. + v2*(hCoeffs->rho77v2 + hCoeffs->rho77v3 * v);
+          rholm=rholm + ((hCoeffs->rho77v6 + hCoeffs->rho77v6l*eulerlogxabs)*v3*v3) + (hCoeffs->rho77v4 *v2 *v2);
           break;
         case 6:
           deltalm = 0.0;
           rholm   = 1. + hCoeffs->rho76v2 * v2;
+          rholm=rholm + (hCoeffs->rho76v4 *v2 *v2);
           break;
         case 5:
-          deltalm = hCoeffs->delta75vh3 * vh3;
+          deltalm = 0.0;
+		  //hCoeffs->delta75vh3 * vh3;
           rholm   = 1. + v2*(hCoeffs->rho75v2 + hCoeffs->rho75v3*v);
+          rholm=rholm + ((hCoeffs->rho75v6 + hCoeffs->rho75v6l*eulerlogxabs)*v3*v3) + (hCoeffs->rho75v4 *v2 *v2);
           break;
         case 4:
           deltalm = 0.0;
           rholm   = 1. + hCoeffs->rho74v2 * v2;
+          rholm=rholm + (hCoeffs->rho74v4 *v2 *v2);
           break;
         case 3:
-          deltalm = hCoeffs->delta73vh3 *vh3;
+          deltalm = 0.;
+		 // hCoeffs->delta73vh3 *vh3;
           rholm   = 1. + v2*(hCoeffs->rho73v2 + hCoeffs->rho73v3 * v);
+          rholm=rholm + ((hCoeffs->rho73v6 + hCoeffs->rho73v6l*eulerlogxabs)*v3*v3) + (hCoeffs->rho73v4 *v2 *v2); 
           break;
         case 2:
           deltalm = 0.0;
           rholm   = 1. + hCoeffs->rho72v2 * v2;
+          rholm=rholm + (hCoeffs->rho72v4 *v2 *v2);
           break;
         case 1:
-          deltalm = hCoeffs->delta71vh3 * vh3;
+          deltalm = 0.0;
+		 // hCoeffs->delta71vh3 * vh3;
           rholm   = 1. + v2*(hCoeffs->rho71v2 +hCoeffs->rho71v3 * v);
+          rholm=rholm + ((hCoeffs->rho71v6 + hCoeffs->rho71v6l*eulerlogxabs)*v3*v3) + (hCoeffs->rho71v4 *v2 *v2);
           break;
         default:
           XLAL_ERROR( XLAL_EINVAL );
@@ -1202,46 +1640,54 @@ UNUSED static int  XLALSimIMREOBGetFactorizedWaveform(
         case 8:
           deltalm = 0.0;
           rholm   = 1. + hCoeffs->rho88v2 * v2;
+          rholm=rholm + (hCoeffs->rho88v4 *v2 *v2);
           break;
         case 7:
           deltalm = 0.0;
           rholm   = 1. + hCoeffs->rho87v2 * v2;
+          rholm=rholm + (hCoeffs->rho87v4 *v2 *v2);
           break;
         case 6:
           deltalm = 0.0;
           rholm   = 1. + hCoeffs->rho86v2 * v2;
+          rholm=rholm + (hCoeffs->rho86v4 *v2 *v2);
           break;
         case 5:
           deltalm = 0.0;
           rholm   = 1. + hCoeffs->rho85v2 * v2;
+          rholm=rholm + (hCoeffs->rho85v4 *v2 *v2);
           break;
         case 4:
           deltalm = 0.0;
           rholm  = 1. + hCoeffs->rho84v2 * v2;
+          rholm=rholm + (hCoeffs->rho84v4 *v2 *v2);
           break;
         case 3:
           deltalm = 0.0;
           rholm  = 1. + hCoeffs->rho83v2 * v2;
+          rholm=rholm + (hCoeffs->rho83v4 *v2 *v2);
           break;
         case 2:
           deltalm = 0.0;
           rholm  = 1. + hCoeffs->rho82v2 * v2;
+          rholm=rholm + (hCoeffs->rho82v4 *v2 *v2);
           break;
         case 1:
           deltalm = 0.0;
           rholm  = 1. + hCoeffs->rho81v2 * v2;
+          rholm=rholm + (hCoeffs->rho81v4 *v2 *v2);
           break;
         default:
           XLAL_ERROR( XLAL_EINVAL );
           break;
       }
+  
       break;
     default:
       XLAL_ERROR( XLAL_EINVAL );
       break;
-  }
-
-  /* Raise rholm to the lth power */
+  }}
+  /* Raise rholm to the lth pow */
   rholmPwrl = 1.0;
   i = l;
   while ( i-- )

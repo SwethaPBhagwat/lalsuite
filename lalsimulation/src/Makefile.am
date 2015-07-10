@@ -69,10 +69,11 @@ pkginclude_HEADERS = \
 
 noinst_HEADERS = \
 	LALSimIMREOBFactorizedWaveform.c \
+        LALSimIMRTNSEOBFactorizedWaveform.c \
 	LALSimIMREOBHybridRingdown.c \
 	LALSimIMREOBNQCCorrection.c \
-	LALSimIMREOBNRv2.h \
-	LALSimIMREOBNewtonianMultipole.c \
+        LALSimIMREOBNRv2.h \
+        LALSimIMREOBNewtonianMultipole.c \
 	LALSimInspiralPNCoefficients.c \
 	LALSimInspiraldEnergyFlux.c \
 	LALSimIMRSpinEOBHamiltonian.c \
@@ -84,6 +85,7 @@ noinst_HEADERS = \
 	LALSimIMRSpinEOBFactorizedWaveform.c \
 	LALSimIMRSpinEOBFactorizedFlux.c \
 	LALSimIMREOBFactorizedFlux.c \
+        LALSimIMRTNSEOBFactorizedFlux.c \
 	LALSimNeutronStarEOSPiecewisePolytrope.c \
 	LALSimNeutronStarEOSTabular.c \
 	LALSimIMRPhenomC_internals.c \
@@ -96,10 +98,11 @@ liblalsimulation_la_SOURCES = \
 	LALSimBurst.c \
 	LALSimBurstImg.c \
 	LALSimIMREOBNRv2.c \
+        LALSimIMRTNSEOB.c \
 	LALSimIMRSpinAlignedEOB.c \
-	LALSimIMRSEOBNRv1ROMEqualSpin.c \
+	LALSimIMRSEOBNRv1ROMEffectiveSpin.c \
 	LALSimIMRSEOBNRv1ROMDoubleSpin.c \
-	LALSimIMRSEOBNRv2ROMEqualSpin.c \
+	LALSimIMRSEOBNRv2ROMEffectiveSpin.c \
 	LALSimIMRSEOBNRv2ROMDoubleSpin.c \
 	LALSimIMRSEOBNRv2ChirpTime.c \
 	LALSimIMRPhenom.c \
@@ -175,4 +178,4 @@ DISTCLEANFILES = config.h
 
 vcs_info_sources = LALSimulationVCSInfoHeader.h
 build_info_source = LALSimulationBuildInfo.c
-$(build_info_source): $(liblalsimulation_la_DEPENDENCIES)
+

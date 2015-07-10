@@ -472,6 +472,14 @@ double XLALSimInspiralGetFinalFreq(
             freqFunc = fEOBNRv2RD;
             break;
 
+
+        case TNSEOB:
+            /* Check that spins are zero */
+        XLALPrintError("I don't know how to calculate final freq. for this approximant, sorry!\n");
+            XLAL_ERROR(XLAL_EINVAL);
+            break;
+
+
         case SEOBNRv1:
             /* Check that the transverse spins are zero */
             if( !checkTransverseSpinsZero(S1x, S1y, S2x, S2y) )
@@ -2365,6 +2373,22 @@ int XLALSimInspiralChooseTDWaveform(
                     m1, m2, f_min, r, i);
             break;
 
+
+        case TNSEOB:
+            /* Waveform-specific sanity checks */
+            if( !XLALSimInspiralWaveformFlagsIsDefault(waveFlags) )
+                ABORT_NONDEFAULT_WAVEFORM_FLAGS(waveFlags);
+            if( !checkSpinsZero(S1x, S1y, S1z, S2x, S2y, S2z) )
+                ABORT_NONZERO_SPINS(waveFlags);
+            if( !checkTidesZero(lambda1, lambda2) )
+                ABORT_NONZERO_TIDES(waveFlags);
+            if( f_ref != 0.)
+                XLALPrintWarning("XLAL Warning - %s: This approximant does use f_ref. The reference phase will be defined at coalescence.\n", __func__);
+            /* Call the waveform driver routine */
+            ret = XLALSimIMRTNSEOBDominantMode(hplus, hcross, phiRef, deltaT,
+                    m1, m2, f_min, r, i);
+            break;
+
         case EOBNRv2:
             /* Waveform-specific sanity checks */
             if( !XLALSimInspiralWaveformFlagsIsDefault(waveFlags) )
@@ -2891,7 +2915,7 @@ int XLALSimInspiralChooseFDWaveform(
             }
             break;
 
-        case SEOBNRv1_ROM_EqualSpin:
+        case SEOBNRv1_ROM_EffectiveSpin:
             /* Waveform-specific sanity checks */
             if( !XLALSimInspiralWaveformFlagsIsDefault(waveFlags) )
                 ABORT_NONDEFAULT_WAVEFORM_FLAGS(waveFlags);
@@ -2901,12 +2925,8 @@ int XLALSimInspiralChooseFDWaveform(
                 ABORT_NONZERO_TIDES(waveFlags);
             if( f_ref != 0.)
                 XLALPrintWarning("XLAL Warning - %s: This approximant does not use f_ref. The reference phase will be defined at coalescence.\n", __func__);
-            if (!checkAlignedSpinsEqual(S1z, S2z)) {
-              XLALPrintError("XLAL Error - %s: Equal-spin model called with unequal aligned spins.\n", __func__);
-              XLAL_ERROR(XLAL_EINVAL);
-            }
 
-            ret = XLALSimIMRSEOBNRv1ROMEqualSpin(hptilde, hctilde,
+            ret = XLALSimIMRSEOBNRv1ROMEffectiveSpin(hptilde, hctilde,
                     phiRef, deltaF, f_min, f_max, f_ref, r, i, m1, m2, XLALSimIMRPhenomBComputeChi(m1, m2, S1z, S2z));
             break;
 
@@ -2925,7 +2945,7 @@ int XLALSimInspiralChooseFDWaveform(
                     phiRef, deltaF, f_min, f_max, f_ref, r, i, m1, m2, S1z, S2z);
             break;
 
-        case SEOBNRv2_ROM_EqualSpin:
+        case SEOBNRv2_ROM_EffectiveSpin:
             /* Waveform-specific sanity checks */
             if( !XLALSimInspiralWaveformFlagsIsDefault(waveFlags) )
                 ABORT_NONDEFAULT_WAVEFORM_FLAGS(waveFlags);
@@ -2935,12 +2955,8 @@ int XLALSimInspiralChooseFDWaveform(
                 ABORT_NONZERO_TIDES(waveFlags);
             if( f_ref != 0.)
                 XLALPrintWarning("XLAL Warning - %s: This approximant does not use f_ref. The reference phase will be defined at coalescence.\n", __func__);
-            if (!checkAlignedSpinsEqual(S1z, S2z)) {
-              XLALPrintError("XLAL Error - %s: Equal-spin model called with unequal aligned spins.\n", __func__);
-              XLAL_ERROR(XLAL_EINVAL);
-            }
 
-            ret = XLALSimIMRSEOBNRv2ROMEqualSpin(hptilde, hctilde,
+            ret = XLALSimIMRSEOBNRv2ROMEffectiveSpin(hptilde, hctilde,
                     phiRef, deltaF, f_min, f_max, f_ref, r, i, m1, m2, XLALSimIMRPhenomBComputeChi(m1, m2, S1z, S2z));
             break;
 
@@ -3766,6 +3782,7 @@ SphHarmTimeSeries *XLALSimInspiralChooseTDModes(
                     phaseO, lmax);
             break;
         case EOBNRv2:
+        case TNSEOB:
         case EOBNRv2HM:
             /* Waveform-specific sanity checks */
             if( !XLALSimInspiralFrameAxisIsDefault(
@@ -4064,6 +4081,7 @@ COMPLEX16TimeSeries *XLALSimInspiralChooseTDMode(
                     phaseO, l, m);
             break;
         case EOBNRv2:
+        case TNSEOB:
         case EOBNRv2HM:
             ts = XLALSimIMREOBNRv2Modes(phiRef, deltaT, m1, m2, f_min, r);
             hlm = XLALSphHarmTimeSeriesGetMode(ts, l, m);
@@ -4118,14 +4136,15 @@ static const char *lalSimulationApproximantNames[] = {
     INITIALIZE_NAME(NumRelNinja2),
     INITIALIZE_NAME(Eccentricity),
     INITIALIZE_NAME(EOBNR),
+    INITIALIZE_NAME(TNSEOB),
     INITIALIZE_NAME(EOBNRv2),
     INITIALIZE_NAME(EOBNRv2HM),
     INITIALIZE_NAME(SEOBNRv1),
     INITIALIZE_NAME(SEOBNRv2),
     INITIALIZE_NAME(SEOBNRv3),
-    INITIALIZE_NAME(SEOBNRv1_ROM_EqualSpin),
+    INITIALIZE_NAME(SEOBNRv1_ROM_EffectiveSpin),
     INITIALIZE_NAME(SEOBNRv1_ROM_DoubleSpin),
-    INITIALIZE_NAME(SEOBNRv2_ROM_EqualSpin),
+    INITIALIZE_NAME(SEOBNRv2_ROM_EffectiveSpin),
     INITIALIZE_NAME(SEOBNRv2_ROM_DoubleSpin),
     INITIALIZE_NAME(HGimri),
     INITIALIZE_NAME(IMRPhenomA),
@@ -4617,6 +4636,7 @@ int XLALSimInspiralImplementedTDApproximants(
         case TaylorT2:
         case TaylorT3:
         case TaylorT4:
+        case TNSEOB:
         case EOBNRv2:
         case IMRPhenomA:
         case EOBNRv2HM:
@@ -4653,9 +4673,9 @@ int XLALSimInspiralImplementedFDApproximants(
         case IMRPhenomB:
         case IMRPhenomC:
         case IMRPhenomP:
-        case SEOBNRv1_ROM_EqualSpin:
+        case SEOBNRv1_ROM_EffectiveSpin:
         case SEOBNRv1_ROM_DoubleSpin:
-        case SEOBNRv2_ROM_EqualSpin:
+        case SEOBNRv2_ROM_EffectiveSpin:
         case SEOBNRv2_ROM_DoubleSpin:
         //case TaylorR2F4:
         case TaylorF2:
@@ -4701,9 +4721,9 @@ int XLALSimInspiralGetSpinSupportFromApproximant(Approximant approx){
     case SEOBNRv1:
     case SEOBNRv2:
     case SEOBNRv3:
-    case SEOBNRv1_ROM_EqualSpin:
+    case SEOBNRv1_ROM_EffectiveSpin:
     case SEOBNRv1_ROM_DoubleSpin:
-    case SEOBNRv2_ROM_EqualSpin:
+    case SEOBNRv2_ROM_EffectiveSpin:
     case SEOBNRv2_ROM_DoubleSpin:
     case TaylorR2F4:
     case IMRPhenomFB:
@@ -4718,6 +4738,7 @@ int XLALSimInspiralGetSpinSupportFromApproximant(Approximant approx){
     case IMRPhenomA:
     case EOBNRv2HM:
     case EOBNRv2:
+    case TNSEOB:
     case EOBNR:
     case EOB:
     case IMRPhenomFA:
@@ -4767,15 +4788,16 @@ int XLALSimInspiralApproximantAcceptTestGRParams(Approximant approx){
     case AmpCorPPN:
     case NumRel:
     case NumRelNinja2:
+    case TNSEOB:
     case EOBNR:
     case EOBNRv2:
     case EOBNRv2HM:
     case SEOBNRv1:
     case SEOBNRv2:
     case SEOBNRv3:
-    case SEOBNRv1_ROM_EqualSpin:
+    case SEOBNRv1_ROM_EffectiveSpin:
     case SEOBNRv1_ROM_DoubleSpin:
-    case SEOBNRv2_ROM_EqualSpin:
+    case SEOBNRv2_ROM_EffectiveSpin:
     case SEOBNRv2_ROM_DoubleSpin:
     case IMRPhenomA:
     case IMRPhenomB:

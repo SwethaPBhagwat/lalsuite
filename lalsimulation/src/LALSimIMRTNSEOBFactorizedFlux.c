@@ -34,11 +34,13 @@
  * This function calculates the factorized flux in the EOB dynamics for
  * the EOBNR (and potentially subsequent) models. The flux function
  * is found in Phys.Rev.D79:064004,2009.
+ *
  */
-static REAL8 XLALSimIMREOBFactorizedFlux(
+
+static REAL8 XLALSimIMRTNSEOBFactorizedFlux(
                       REAL8Vector  *values, /**<< Dynamics r, phi, pr, pphi */
                       const REAL8  omega,   /**<< Angular frequency omega */
-                      EOBParams    *ak,     /**<< Structure containing pre-computed parameters */
+                      TNSEOBParams    *ak,     /**<< Structure containing pre-computed parameters */
                       const INT4   lMax     /**<< Maximum l to include when calculating flux (between 2 and 8) */
                      )
 
@@ -84,13 +86,13 @@ static REAL8 XLALSimIMREOBFactorizedFlux(
     XLAL_ERROR_REAL8( XLAL_EFUNC );
   }
 
-  if ( XLALSimIMREOBGetFactorizedWaveform( &hLM, values, v, l, m, ak )
+  if (XLALSimIMRTNSEOBGetFactorizedWaveform( &hLM, values, v, l, m, ak )
            == XLAL_FAILURE )
   {
     XLAL_ERROR_REAL8( XLAL_EFUNC );
   }
   /* For the 2,2 mode, we apply NQC correction to the flux */
-  hLM *= hNQC;
+//  hLM *= hNQC;
 
   flux = (REAL8)(m * m) * omegaSq * (creal(hLM)*creal(hLM) + cimag(hLM)*cimag(hLM));
 
@@ -98,7 +100,7 @@ static REAL8 XLALSimIMREOBFactorizedFlux(
   l = 2;
   m = 1;
 
-  if ( XLALSimIMREOBGetFactorizedWaveform( &hLM, values, v, l, m, ak )
+  if ( XLALSimIMRTNSEOBGetFactorizedWaveform( &hLM, values, v, l, m, ak )
            == XLAL_FAILURE )
   {
     XLAL_ERROR_REAL8( XLAL_EFUNC );
@@ -116,7 +118,7 @@ static REAL8 XLALSimIMREOBFactorizedFlux(
     for ( m = 1; m <= l; m++ )
     {
 
-      if ( XLALSimIMREOBGetFactorizedWaveform( &hLM, values, v, l, m, ak )
+      if ( XLALSimIMRTNSEOBGetFactorizedWaveform( &hLM, values, v, l, m, ak )
              == XLAL_FAILURE )
       {
         XLAL_ERROR_REAL8( XLAL_EFUNC );
@@ -128,7 +130,5 @@ static REAL8 XLALSimIMREOBFactorizedFlux(
 
   return flux * LAL_1_PI / 8.0;
 }
-
-
 
 #endif /*_LALSIMIMRFACTORIZEDFLUX_C*/

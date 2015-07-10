@@ -1,0 +1,28 @@
+41c41
+< #include "LALSimIMRTNSEOB.h"
+---
+> #include "LALSimIMREOBNRv2.h"
+753c753
+< XLALSimIMRTNSEOBGenerator(
+---
+> XLALSimIMREOBNRv2Generator(
+766c766
+< {  printf("Entered TNSEOB");
+---
+> {
+1689c1689
+< XLALSimIMRTNSEOBDominantMode(
+---
+> XLALSimIMREOBNRv2DominantMode(
+1700c1700
+< { printf("making NS TEOB dominant mode");
+---
+> {
+1702c1702
+<   if ( XLALSimIMRTNSEOBGenerator(hplus, hcross, NULL, phiC, deltaT, m1SI, m2SI,
+---
+>   if ( XLALSimIMREOBNRv2Generator(hplus, hcross, NULL, phiC, deltaT, m1SI, m2SI,
+1755c1755
+<   if ( XLALSimIMRTNSEOBGenerator(NULL, NULL, &hlms, phiRef, deltaT, m1, m2,
+---
+>   if ( XLALSimIMREOBNRv2Generator(NULL, NULL, &hlms, phiRef, deltaT, m1, m2,
