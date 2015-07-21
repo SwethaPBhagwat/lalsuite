@@ -2380,13 +2380,11 @@ int XLALSimInspiralChooseTDWaveform(
                 ABORT_NONDEFAULT_WAVEFORM_FLAGS(waveFlags);
             if( !checkSpinsZero(S1x, S1y, S1z, S2x, S2y, S2z) )
                 ABORT_NONZERO_SPINS(waveFlags);
-            if( !checkTidesZero(lambda1, lambda2) )
-                ABORT_NONZERO_TIDES(waveFlags);
             if( f_ref != 0.)
                 XLALPrintWarning("XLAL Warning - %s: This approximant does use f_ref. The reference phase will be defined at coalescence.\n", __func__);
             /* Call the waveform driver routine */
             ret = XLALSimIMRTNSEOBDominantMode(hplus, hcross, phiRef, deltaT,
-                    m1, m2, f_min, r, i);
+                    m1, m2, f_min, r, i,lambda1,lambda2);
             break;
 
         case EOBNRv2:

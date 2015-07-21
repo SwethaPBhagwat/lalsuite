@@ -70,11 +70,7 @@ XLALSimIMREOBNRv2SetupFlux(
 static REAL8
 omegaofrP4PN (
              const REAL8 r,
-             const REAL8 eta,
-	     const REAL8 mass1,
-	     const REAL8 mass2,
-	     const REAL8 lambda1,
-	     const REAL8 lambda2);
+             const REAL8 eta);
 
 static
 int LALHCapDerivativesP4PN(   double t,
@@ -84,10 +80,6 @@ int LALHCapDerivativesP4PN(   double t,
 
 static
 REAL8 XLALCalculateOmega (   REAL8 eta,
-			     REAL8 mass1,
-			     REAL8 mass2,
-			     REAL8 lambda1,
-			     REAL8 lambda2,
                              REAL8 r,
                              REAL8 pr,
                              REAL8 pPhi);
@@ -105,20 +97,17 @@ int XLALHighSRStoppingCondition(double t,
                                 void   *funcParams);
 
 static
-REAL8 XLALprInitP4PN( REAL8 p, void  *params);
+REAL8 XLALprInitP4PN(REAL8 p, void  *params);
 
 static
 REAL8 XLALpphiInitP4PN( const REAL8 r,
-                        const REAL8 m1,
-           		const REAL8 m2,
-            		const REAL8 lambda1,
-            		const REAL8 lambda2 );
+                        const REAL8 eta );
 
 static
 REAL8 XLALrOfOmegaP4PN( REAL8 r, void *params);
 
 static
-REAL8 XLALvrP4PN(const REAL8 r, const REAL8 omega, const REAL8 eta, const REAL8 mass1, const REAL8 mass2, const REAL8 lambda1, const REAL8 lambda2);
+REAL8 XLALvrP4PN(const REAL8 r, const REAL8 omega, const REAL8 eta);
 
 static
 size_t find_instant_freq(const REAL8TimeSeries *hp, const REAL8TimeSeries *hc, const REAL8 target, const size_t start, const int fsign);
@@ -138,17 +127,10 @@ size_t find_instant_freq_hlm(const COMPLEX16TimeSeries *hlm,
 REAL8
 XLALpphiInitP4PN(
             const REAL8 r,                     /**<< Initial orbital separation */
-            const REAL8 m1,
-            const REAL8 m2,
-	    const REAL8 lambda1,
-	    const REAL8 lambda2
+            const REAL8 eta
             )
 {
   REAL8 u, u2, A, dA;
-  REAL8 totalMass, eta;
-
-   totalMass = m1 + m2;
-   eta = m1 * m2 / (totalMass*totalMass);
 
   u  = 1. / r;
   u2 = u*u;
@@ -156,16 +138,8 @@ XLALpphiInitP4PN(
   /* Comparing this expression with the old one, I *think* I will need to multiply */
   /* dA by - r^2. TODO: Check that this should be the case */
 
-  A  = XLALCalculateTNSEOBA( r, m1,m2, lambda1, lambda2 );
-  //dA = - r*r * XLALCalculateEOBdAdr( r, eta ); REALLY???!?!?!
-  //dA is dAdu NOT dAdr
-  dA =  XLALCalculateEOBdAdu(r,m1,m2,lambda1,lambda2);
-  printf("In the function pphiInit");
-  printf("\n%f",dA/(2.*u*A + u2 * dA));
-  printf("dA/(2.*u*A + u2 * dA)....");
-  
-  printf("\n%f",sqrt(-dA/(2.*u*A + u2 * dA)));
-  printf("q");
+  A  = XLALCalculateEOBA( r, eta );
+  dA = - r*r * XLALCalculateEOBdAdr( r, eta );
   return sqrt(-dA/(2.*u*A + u2 * dA));
 /* why is it called phase? This is initial j!? */
 }
@@ -182,28 +156,25 @@ XLALpphiInitP4PN(
  */
 
 REAL8
-XLALprInitP4PN(REAL8 p,     /**<< The pr value we are currently testing */
-             void *params /**<< The TNSpr3In structure containing necessary parameters */
+XLALprInitP4PN(
+             REAL8 p,     /**<< The pr value we are currently testing */
+             void *params /**<< The pr3In structure containing necessary parameters */
              )
 {
   REAL8  pr;
   REAL8  u, u2, p2, p3, p4, A;
   REAL8  onebyD, AbyD, Heff, HReal, etahH;
-  REAL8 eta,  mass1, mass2, lambda1, lambda2, z3, r, vr, q;
-  TNSPr3In *ak;
+  REAL8 eta, z3, r, vr, q;
+  pr3In *ak;
 
   /* TODO: Change this to use tortoise coord */
 
-  ak = (TNSPr3In *) params;
+  ak = (pr3In *) params;
 
   eta = ak->eta;
   vr = ak->vr;
   r = ak->r;
   q = ak->q;
-  mass1 = ak->mass1;
-  mass2 = ak->mass2;
-  lambda1 = ak->lambda1;
-  lambda2 = ak->lambda2; 
 
    p2 = p*p;
    p3 = p2*p;
@@ -212,7 +183,7 @@ XLALprInitP4PN(REAL8 p,     /**<< The pr value we are currently testing */
    u2 = u*u;
    z3 = 2. * (4. - 3. * eta) * eta;
 
-   A = XLALCalculateTNSEOBA( r, mass1,mass2, lambda1, lambda2 );
+   A = XLALCalculateEOBA( r, eta );
    onebyD = 1. / XLALCalculateEOBD( r, eta );
    AbyD = A * onebyD;
 
@@ -235,43 +206,26 @@ XLALprInitP4PN(REAL8 p,     /**<< The pr value we are currently testing */
 static REAL8
 omegaofrP4PN (
              const REAL8 r,   /**<< Initial orbital separation (in units of total mass M */
-             const REAL8 eta,
-             const REAL8 mass1,
-	     const REAL8 mass2,
-	     const REAL8 lambda1,
-	     const REAL8 lambda2 /**<< Symmetric mass ratio */
+             const REAL8 eta /**<< Symmetric mass ratio */
             // void *params     /**<< The pre-computed A coefficients */
              )
 {
-   REAL8 u,u2, u3, A, dA, omega;
+   REAL8 u, u3, A, dA, omega;
 
   // EOBACoefficients *coeffs;
   // coeffs = (EOBACoefficients *) params;
-   printf("\n%f",r);
-   printf("r");
-   
+
    u = 1./r;
-   u2= u*u;
    u3 = u*u*u;
-   
-   A  = XLALCalculateTNSEOBA( r, mass1,mass2, lambda1, lambda2 );
-   dA = -u2*  XLALCalculateEOBdAdu(r,mass1,mass2,lambda1,lambda2);
-   printf("\n%f",A);
-   printf("A..");
+
+   A  = XLALCalculateEOBA( r, eta );
+   dA = XLALCalculateEOBdAdr( r, eta );
+
    /* Comparing this expression with the old one, I *think* I will need to multiply */
    /* dA by - r^2. TODO: Check that this should be the case */
    dA = - r * r * dA;
-   printf("\n%f",dA);
-   printf("dA...");
+
    omega = sqrt(u3) * sqrt ( -0.5 * dA /(1. + 2.*eta * (A/sqrt(A+0.5 * u*dA)-1.)));
-   printf("\n%f",u3);
-   printf("u");
-   printf("\n%f",-0.5 * dA /(1. + 2.*eta * (A/sqrt(A+0.5 * u*dA)-1.)));
-   printf("This is  -0.5 * dA /(1. + 2.*eta * (A/sqrt(A+0.5 * u*dA)-1.)))");
-   printf("\n%f",(A+0.5 * u*dA));
-   printf("(A+0.5 * u*dA))");
-   printf("\n%f",omega);
-   printf("omega");
    return omega;
 }
 
@@ -286,21 +240,21 @@ omegaofrP4PN (
 REAL8
 XLALrOfOmegaP4PN(
             REAL8 r,     /**<< Test value of the initial radius */
-            void *params /**<< TNSpr3In structure, containing useful parameters, including omega */
+            void *params /**<< pr3In structure, containing useful parameters, including omega */
             )
 {
   REAL8  omega1,omega2;
- TNSPr3In *TNSpr3In;
+  pr3In *pr3in;
 
 #ifndef LAL_NDEBUG
   if ( !params )
     XLAL_ERROR_REAL8( XLAL_EFAULT );
 #endif
 
-  TNSpr3In = (TNSPr3In *) params;
+  pr3in = (pr3In *) params;
 
-  omega1 = TNSpr3In->omega;
-  omega2 = omegaofrP4PN(r, TNSpr3In->eta, TNSpr3In->mass1,TNSpr3In->mass2, TNSpr3In->lambda1, TNSpr3In->lambda2);
+  omega1 = pr3in->omega;
+  omega2 = omegaofrP4PN(r, pr3in->eta);
   return ( -omega1 + omega2 );
 }
 
@@ -324,7 +278,7 @@ LALHCapDerivativesP4PN( double UNUSED t,        /**<< Current time (GSL requires
   /* Max l to sum up to in the factorized flux */
   const INT4 lMax = 8;
 
-  REAL8 eta, omega, mass1, mass2, lambda1, lambda2;
+  REAL8 eta, omega;
 
   double r, p, q;
   REAL8 r2, p2, p4, q2;
@@ -344,11 +298,6 @@ LALHCapDerivativesP4PN( double UNUSED t,        /**<< Current time (GSL requires
   memcpy( &(valuesVec.data), &(values), sizeof(REAL8 *) );
 
   eta = params->eta;
-  mass1= params->mass1;
-  mass2=params->mass2;
-  lambda1= params->lambda1;
-  lambda2=params->lambda2;
-  
 
   z3   = 2. * ( 4. - 3. * eta ) * eta;
 
@@ -364,8 +313,8 @@ LALHCapDerivativesP4PN( double UNUSED t,        /**<< Current time (GSL requires
   p4 = p2 * p2;
   q2 = q * q;
 
-  A          = XLALCalculateTNSEOBA(r, mass1,mass2,lambda1,lambda2 );
-  dAdr       = -u2 *  XLALCalculateEOBdAdu(r,mass1,mass2,lambda1,lambda2);
+  A          = XLALCalculateEOBA(r, eta );
+  dAdr       = XLALCalculateEOBdAdr(r, eta );
   AoverSqrtD = A / sqrt( XLALCalculateEOBD(r, eta) );
 
   /* Note that Hreal as given here is missing a factor of 1/eta */
@@ -373,7 +322,7 @@ LALHCapDerivativesP4PN( double UNUSED t,        /**<< Current time (GSL requires
   /* the combination eta*Hreal*Heff, so the eta would get       */
   /* cancelled out anyway. */
 
-  Heff  = XLALEffectiveHamiltonian( eta,mass1,mass2, lambda1,lambda2, r, p, q );
+  Heff  = XLALEffectiveHamiltonian( eta, r, p, q );
   Hreal = sqrt( 1. + 2.*eta*(Heff - 1.) );
 
   HeffHreal = Heff * Hreal;
@@ -404,10 +353,6 @@ LALHCapDerivativesP4PN( double UNUSED t,        /**<< Current time (GSL requires
  */
 static
 REAL8 XLALCalculateOmega(   REAL8 eta,                /**<< Symmetric mass ratio */
-			    REAL8 mass1,
-			    REAL8 mass2,
-		            REAL8 lambda1,
-			    REAL8 lambda2,
                             REAL8 r,                  /**<< Orbital separation (units of total mass M) */
                             REAL8 pr,                 /**<< Tortoise co-ordinate */
                             REAL8 pPhi               /**<< Momentum pphi */
@@ -417,8 +362,8 @@ REAL8 XLALCalculateOmega(   REAL8 eta,                /**<< Symmetric mass ratio
 
   REAL8 A, Heff, Hreal, HeffHreal;
 
-  A    = XLALCalculateTNSEOBA( r, mass1,mass2, lambda1, lambda2 );
-  Heff = XLALEffectiveHamiltonian( eta,mass1,mass2,lambda1,lambda2, r, pr, pPhi );
+  A    = XLALCalculateEOBA( r, eta );
+  Heff = XLALEffectiveHamiltonian( eta, r, pr, pPhi );
   Hreal = sqrt( 1. + 2.*eta*(Heff - 1.) );
 
   HeffHreal = Heff * Hreal;
@@ -465,24 +410,18 @@ XLALHighSRStoppingCondition(double UNUSED t,       /**<< Current time (required 
 {
   TNSEOBParams *params = (TNSEOBParams *)funcParams;
   REAL8 rstop;
-
-//  rstop=1.0;
   if ( params->eta > 0.1 )
   {
-//    rstop = 1.25 - params->eta;
-   rstop=10.0;
-   printf("stopping1");
+    rstop = 1.25 - params->eta;
   }
- else
+  else
   {
-//    rstop = 2.1 - 10.0 * params->eta;
-   rstop=10.0;
-   printf("stopping2");
+    rstop = 2.1 - 10.0 * params->eta;
   }
 
   if ( values[0] <= rstop || isnan(dvalues[3]) || isnan (dvalues[2]) || isnan (dvalues[1]) || isnan (dvalues[0]) )
   {
-   return 1;
+    return 1;
   }
   return 0;
 }
@@ -496,11 +435,7 @@ XLALHighSRStoppingCondition(double UNUSED t,       /**<< Current time (required 
 
 REAL8 XLALvrP4PN( const REAL8 r,    /**<< Orbital separation (in units of total mass M) */
                  const REAL8 omega, /**<< Orbital frequency (dimensionless: M*omega)*/
-                 const REAL8 eta,
-                 const REAL8 mass1,
-                 const REAL8 mass2,
-                 const REAL8 lambda1,
-                 const REAL8 lambda2)
+                 const REAL8 eta)
 {
   REAL8 A, dAdr, dA, d2A;
   REAL8 r2, r3, r4, r5, u, u2, v, x1;
@@ -520,14 +455,13 @@ REAL8 XLALvrP4PN( const REAL8 r,    /**<< Orbital separation (in units of total 
   u2 = u*u;
 
 
-  A      =  XLALCalculateTNSEOBA(r,mass1,mass2, lambda1, lambda2);
-  dAdr   =  -u2*XLALCalculateEOBdAdu(r,mass1,mass2,lambda1,lambda2);
+  A      =  XLALCalculateEOBA(r,eta);
+  dAdr   = XLALCalculateEOBdAdr(r,eta);
   
 
   /* The next derivatives are with respect to u, not r */
 
-
-  dA  = XLALCalculateEOBdAdu(r,mass1,mass2,lambda1,lambda2);
+  dA  = XLALCalculateEOBdAdu(r,eta);
   d2A =  XLALCalculateEOBd2Adu2(r,eta);
 
   v = cbrt(omega);
@@ -802,9 +736,7 @@ XLALSimIMRTNSEOBGenerator(
               const REAL8       fLower,
               const REAL8       distance,
               const REAL8       inclination,
-              const int         higherModeFlag,
-	      const REAL8       lambda1,
-	      const REAL8       lambda2
+              const int         higherModeFlag
               )
 {  printf("Entered TNSEOB");
    UINT4                   count, nn=4, hiSRndx=0;
@@ -834,7 +766,7 @@ XLALSimIMRTNSEOBGenerator(
    INT4                    retLen;
    REAL8                   tMax;
 
-   TNSPr3In                   TNSpr3In;
+   TNS_pr3In                   TNSpr3In;
 
    /* Stuff for pre-computed EOB values */
    TNSEOBParams eobParams;
@@ -866,9 +798,7 @@ XLALSimIMRTNSEOBGenerator(
    const REAL8 xacc = 1.0e-12;
 
    /* Min and max rInit and prInit to consider in root finding */
-   //const REAL8 rInitMin = 3.;
-   const REAL8 rInitMin = 6.;
-
+   const REAL8 rInitMin = 3.;
    const REAL8 rInitMax = 1000.;
    
    const REAL8 prInitMin = -10.;
@@ -1034,28 +964,21 @@ XLALSimIMRTNSEOBGenerator(
    }
 
    /* Calculate the time we will need to step back for ringdown */
-   tStepBack = 10000.0 * m;
+   tStepBack = 20.0 * m;
    nStepBack = ceil( tStepBack / dt );
-
-   printf("\n%f",tStepBack);
-   printf("tStepBack");
-   printf("\n%u",nStepBack);
-   printf("nStepBack");
 
    /* Set up structures for pre-computed EOB coefficients */
    memset( &eobParams, 0, sizeof(eobParams) );
    eobParams.eta = eta;
-   eobParams.mass1  = mass1;
-   eobParams.mass2  = mass2;
-   eobParams.lambda1 = lambda1;
-   eobParams.lambda2 = lambda2;
+   eobParams.m1  = mass1;
+   eobParams.m2  = mass2;
    //eobParams.aCoeffs   = &aCoeffs;
    eobParams.hCoeffs   = &hCoeffs;
    eobParams.nqcCoeffs = &nqcCoeffs;
    eobParams.prefixes  = &prefixes;
 
    if ( XLALSimIMRTNSEOBCalcFacWaveformCoefficients( &hCoeffs, eta) == XLAL_FAILURE 
-   ||   XLALSimIMREOBComputeNewtonMultipolePrefixes( &prefixes, eobParams.mass1, eobParams.mass2 )
+   ||   XLALSimIMREOBComputeNewtonMultipolePrefixes( &prefixes, eobParams.m1, eobParams.m2 )
          == XLAL_FAILURE )
    {
      XLALDestroyCOMPLEX16Vector( modefreqs );
@@ -1116,19 +1039,14 @@ XLALSimIMRTNSEOBGenerator(
    /* For now we need it so that we can see what the initial r is. */
 
    TNSpr3In.omega = omega;
-   TNSpr3In.mass1=mass1;
-   TNSpr3In.mass2=mass2;
-   TNSpr3In.lambda1=lambda1;
-   TNSpr3In.lambda2=lambda2;
- 
 
-    if ( XLALrOfOmegaP4PN(rInitMin, &TNSpr3In) < 0.)
+   /* if ( XLALrOfOmegaP4PN(rInitMin, &TNSpr3In) < 0.)
    {
      XLALPrintError( "Initial orbital frequency too high. The corresponding initial radius < %fM\n", rInitMin);
      XLALDestroyREAL8Vector( values );
      XLALDestroyREAL8Vector( dvalues );
      XLAL_ERROR( XLAL_EFUNC );
-   } 
+   } */
    /* If initial frequency too high and initial r < 10M, start at r = 10M, set flag and remove low freq waveform at the end */
    if ( XLALrOfOmegaP4PN(10., &TNSpr3In) < 0.)
    {
@@ -1147,9 +1065,6 @@ XLALSimIMRTNSEOBGenerator(
    }
    r = XLALDBisectionFindRoot( XLALrOfOmegaP4PN, rInitMin,
               rInitMax, xacc, &TNSpr3In);
-
-   printf("\n%f",r);
-   printf("Initial r is solved at this point.   r = XLALDBisectionFindRoot( XLALrOfOmegaP4PN, rInitMin, rInitMax, xacc, &TNSpr3In); ENDED. ");
    if ( XLAL_IS_REAL8_FAIL_NAN( r ) )
    {
      XLALPrintError( "Failed solving the initial radius. The desired initial orbital frequency is %e\n", omega );
@@ -1164,23 +1079,17 @@ XLALSimIMRTNSEOBGenerator(
 
    r = (r<rmin) ? rmin : r;
    TNSpr3In.r = r;
- printf("Calculating omega");
+
    /* Now that r is changed recompute omega corresponding */
    /* to that r and only then compute initial pr and pphi */
 
-   omega = omegaofrP4PN( r, eta, mass1,mass2,lambda1,lambda2 );
+   omega = omegaofrP4PN( r, eta );
    TNSpr3In.omega = omega;
-   printf("\n%f",omega);
-   printf("omega");
-   
-   q = XLALpphiInitP4PN(r, mass1, mass2, lambda1, lambda2 );
-   printf("\n%f",q);
-   printf("q");   
-/* first we compute vr (we need coeef->Fp6) */
+   q = XLALpphiInitP4PN(r, eta );
+   /* first we compute vr (we need coeef->Fp6) */
    TNSpr3In.q = q;
-   TNSpr3In.vr = XLALvrP4PN(r, omega, eta, mass1,mass2,lambda1,lambda2);
+   TNSpr3In.vr = XLALvrP4PN(r, omega, eta);
    /* then we compute the initial value of p */
-   printf("finding initial p");
    p = XLALDBisectionFindRoot( XLALprInitP4PN, prInitMin, prInitMax, xacc, &TNSpr3In);
    if ( XLAL_IS_REAL8_FAIL_NAN( p ) )
    {
@@ -1190,9 +1099,9 @@ XLALSimIMRTNSEOBGenerator(
    }
    /* We need to change P to be the tortoise co-ordinate */
    /* TODO: Change prInit to calculate this directly */
-   p = p * XLALCalculateTNSEOBA(r, mass1,mass2, lambda1, lambda2);
+   p = p * XLALCalculateEOBA(r, eta);
    p = p / sqrt( XLALCalculateEOBD( r, eta ) );
-   
+
    s = 0.0;
 
    values->data[0] = r;
@@ -1269,18 +1178,9 @@ XLALSimIMRTNSEOBGenerator(
    /* TODO: Implement error checking */
    retLen = XLALAdaptiveRungeKutta4( integrator, &eobParams, values->data, 0., tMax/m, dt/m, &dynamics );
 
-
-   printf("low resolution Initegration is done..........");
    /* We should have integrated to the peak of the frequency by now */
    hiSRndx = retLen - nStepBack;
-   
 
-  fprintf(stderr,"\n%u",hiSRndx);
-  fprintf(stderr,"hiSRndx");
-   fprintf(stderr,"\n%u",retLen);
-   fprintf(stderr,"retLen");
-  fprintf(stderr,"\n%u",nStepBack);
-   fprintf(stderr,"nStepBack");
    /* Set up the vectors, and re-initialize everything for the high sample rate */
    rVec.length  = phiVec.length = prVec.length = pPhiVec.length = retLen;
    rVec.data    = dynamics->data+retLen;
@@ -1294,50 +1194,12 @@ XLALSimIMRTNSEOBGenerator(
    values->data[2] = prVec.data[hiSRndx];
    values->data[3] = pPhiVec.data[hiSRndx];
 
-FILE *fp1;
-
-fp1=fopen("dump_lowRes.txt", "w");
-if(fp1 == NULL)
-    exit(-1);
-int cellno;
-for ( cellno=0; cellno<retLen; cellno=cellno+1 )
-{
-   fprintf(fp1,"\n%f\t%f", (double) dynamics->data[cellno], (double) rVec.data[cellno]);
-}
-
-fclose(fp1);
-
-
-
-FILE *fp2;
-
-fp2=fopen("Initial_cond_for_highres.txt", "w");
-if(fp2 == NULL)
-    exit(-1);
-//int cellno;
-//for ( cellno=0; cellno<retLen; cellno=cellno+1 )
-{  fprintf(fp2,"\n%u",lengthHiSR);
-   fprintf(fp2,"\n%f",dt/m);
-   fprintf(fp2,"\n%f\t%f\t%f\t%f", (double) values->data[0], (double) values->data[1],(double) values->data[2],(double) values->data[3]);
- fprintf(fp2,"\n%u",hiSRndx);
-  fprintf(fp2,"hiSRndx");
-   fprintf(fp2,"\n%u",retLen);
-   fprintf(fp2,"retLen");
-  fprintf(fp2,"\n%u",nStepBack);
-   fprintf(fp2,"nStepBack");
-}
-
-fclose(fp2);
-
-
-
-
    /* We want to use a different stopping criterion for the higher sample rate */
    integrator->stop = XLALHighSRStoppingCondition;
 
    retLen = XLALAdaptiveRungeKutta4( integrator, &eobParams, values->data,
      0, (lengthHiSR-1)*dt/m, dt/m, &dynamicsHi );
-  printf("high res integration is done.............");
+
    rVecHi.length  = phiVecHi.length = prVecHi.length = pPhiVecHi.length = tVecHi.length = retLen;
    rVecHi.data    = dynamicsHi->data+retLen;
    phiVecHi.data  = dynamicsHi->data+2*retLen;
@@ -1345,27 +1207,6 @@ fclose(fp2);
    pPhiVecHi.data = dynamicsHi->data+4*retLen;
    tVecHi.data    = dynamicsHi->data;
 
-
-//double dynamics_double = (double) dynamics;
-
-
-FILE *fp;
-
-fp=fopen("dump.txt", "w");
-if(fp == NULL)
-    exit(-1);
-//int cellno;
-for ( cellno=0; cellno<retLen; cellno=cellno+1 )
-{
-   fprintf(fp,"\n%f\t%f\t%f\t%f", (double) dynamicsHi->data[cellno], (double) rVecHi.data[cellno], (double)phiVecHi.data[cellno], (double) pPhiVecHi.data[cellno] );
-}
-
-fclose(fp);
-
-
-
-
- 
    /* We are now finished with the adaptive RK, so we can free its resources */
    XLALAdaptiveRungeKutta4Free( integrator );
    integrator = NULL;
@@ -1402,7 +1243,7 @@ fclose(fp);
            Implement a continuous search. */
   while ( i < hiSRndx )
   {
-    omega = XLALCalculateOmega( eta,mass1,  mass2, lambda1, lambda2, rVec.data[i], prVec.data[i], pPhiVec.data[i] );
+    omega = XLALCalculateOmega( eta, rVec.data[i], prVec.data[i], pPhiVec.data[i] );
     if ( omega > lfCut || fabs( omega - lfCut ) < 1.0e-5 )
     {
       break;
@@ -1434,7 +1275,7 @@ fclose(fp);
   phaseCounter = 0;
   for ( i=0; i < (UINT4)retLen; i++ )
   {
-    omega = XLALCalculateOmega( eta,mass1,mass2,lambda1,lambda2, rVecHi.data[i], prVecHi.data[i], pPhiVecHi.data[i] );
+    omega = XLALCalculateOmega( eta, rVecHi.data[i], prVecHi.data[i], pPhiVecHi.data[i] );
     omegaHi->data[i] = omega;
     /* For now we re-populate values - there may be a better way to do this */
     values->data[0] = r = rVecHi.data[i];
@@ -1449,29 +1290,19 @@ fclose(fp);
     omegaOld = omega;
   }
   finalIdx = retLen - 1;
-  printf("\n%u",finalIdx);
-  printf("finalIdx");
- printf("\n%u", peakIdx);
-  printf("peakIdx");
- printf("Finding Peak........");
+
   /* Stuff to find the actual peak time */
   gsl_spline    *spline = NULL;
   gsl_interp_accel *acc = NULL;
   REAL8 omegaDeriv1;
   REAL8 time1, time2;   
   REAL8 timePeak, omegaDerivMid;
-  printf("\n%f",dynamicsHi->data[peakIdx]);
-  printf("data[peak]...");
-    
+
   spline = gsl_spline_alloc( gsl_interp_cspline, retLen );
-  printf("spline done");
   acc    = gsl_interp_accel_alloc();
-  printf("acc done");
+
   time1 = dynamicsHi->data[peakIdx];
-  printf("\n%f",time1);
-  printf("time1");  
-  printf("\n%u", peakIdx);
-  printf("peakIdx");
+
   gsl_spline_init( spline, dynamicsHi->data, omegaHi->data, retLen );
   omegaDeriv1 = gsl_spline_eval_deriv( spline, time1, acc );
   if ( omegaDeriv1 > 0. )
@@ -1485,17 +1316,12 @@ fclose(fp);
     peakIdx--;
     omegaDeriv1 = gsl_spline_eval_deriv( spline, time1, acc );
   }
-  
-
-  printf("\n%f",time2);
-  printf("time2");
 
   do
   {
     timePeak = ( time1 + time2 ) / 2.;
     omegaDerivMid = gsl_spline_eval_deriv( spline, timePeak, acc );
-    
-    printf("\n%f",timePeak);
+
     if ( omegaDerivMid * omegaDeriv1 < 0.0 )
     {
       time2 = timePeak;
@@ -1587,7 +1413,7 @@ fclose(fp);
     phaseCounter = 0;
     for ( i=0; i < (UINT4)retLen; i++ )
     {
-      omega = XLALCalculateOmega( eta,mass1,mass2,lambda1,lambda2, rVecHi.data[i], prVecHi.data[i], pPhiVecHi.data[i] );
+      omega = XLALCalculateOmega( eta, rVecHi.data[i], prVecHi.data[i], pPhiVecHi.data[i] );
       omegaHi->data[i] = omega;
       /* For now we re-populate values - there may be a better way to do this */
       values->data[0] = r = rVecHi.data[i];
@@ -1622,7 +1448,7 @@ fclose(fp);
     i = startIdx;
     while ( i < hiSRndx )
     {
-       omega = XLALCalculateOmega( eta,mass1,mass2,lambda1,lambda2, rVec.data[i], prVec.data[i], pPhiVec.data[i] );
+       omega = XLALCalculateOmega( eta, rVec.data[i], prVec.data[i], pPhiVec.data[i] );
        /* For now we re-populate values - there may be a better way to do this */
        values->data[0] = r = rVec.data[i];
        values->data[1] = s = phiVec.data[i] - sSub;
@@ -1645,7 +1471,7 @@ fclose(fp);
     /* Now apply the NQC correction to the high sample part */
     for ( i = 0; i <= finalIdx; i++ )
     {
-      omega = XLALCalculateOmega( eta,mass1,mass2,lambda1,lambda2, rVecHi.data[i], prVecHi.data[i], pPhiVecHi.data[i] );
+      omega = XLALCalculateOmega( eta, rVecHi.data[i], prVecHi.data[i], pPhiVecHi.data[i] );
 
       /* For now we re-populate values - there may be a better way to do this */
       values->data[0] = r = rVecHi.data[i];
@@ -1845,14 +1671,12 @@ XLALSimIMRTNSEOBDominantMode(
               const REAL8       m2SI,       /**<< Second component mass (in kg) */
               const REAL8       fLower,     /**<< Starting frequency (in Hz) */
               const REAL8       distance,   /**<< Distance to source (in metres) */
-              const REAL8       inclination, /**<< Inclination of the source (in radians) */
-   	      const REAL8       lambda1,
-	      const REAL8       lambda2
+              const REAL8       inclination /**<< Inclination of the source (in radians) */
               )
-{ printf("making NS TEOB dominant mode......");
+{ printf("making NS TEOB dominant mode");
 
   if ( XLALSimIMRTNSEOBGenerator(hplus, hcross, NULL, phiC, deltaT, m1SI, m2SI,
-              fLower, distance, inclination,0, lambda1, lambda2 ) == XLAL_FAILURE )
+              fLower, distance, inclination, 0 ) == XLAL_FAILURE )
   {
     XLAL_ERROR( XLAL_EFUNC );
   }

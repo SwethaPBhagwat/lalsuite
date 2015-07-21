@@ -890,14 +890,15 @@ struct tagTNSEOBParams
 {
   REAL8 eta;
   REAL8 omega;
-  REAL8 m1;
-  REAL8 m2;
+  REAL8 mass1;
+  REAL8 mass2;
+  REAL8 lambda1;
+  REAL8 lambda2;
   //EOBACoefficients        *aCoeffs;
   TNSFacWaveformCoeffs       *hCoeffs;
   EOBNonQCCoeffs          *nqcCoeffs;
   NewtonMultipolePrefixes *prefixes;
-}
-TNSEOBParams;
+}TNSEOBParams;
 
 /**
  * Structure containing parameters used to determine
@@ -915,13 +916,17 @@ TNSEOBParams;
  * current guess of the radial momentum within a structure.
  */
 typedef struct tagTNSPr3In {
-  REAL8 eta;                 /**<< Symmetric mass ratio */
+  REAL8 eta;   
+  REAL8 mass1;
+  REAL8 mass2;
+  REAL8 lambda1;
+  REAL8 lambda2;              /**<< Symmetric mass ratio */
   REAL8 omega;               /**<< Angular frequency (dimensionless combination M omega) */
   REAL8 vr;                  /**<< Radial velocity (dimensionless) */
   REAL8 r;                   /**<< Orbital separation (units of total mass) */
   REAL8 q;                   /**<< Momentum pphi */
   
-} TNS_pr3In;
+} TNSPr3In;
 
 
 #if 0

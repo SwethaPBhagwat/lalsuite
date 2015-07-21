@@ -470,9 +470,11 @@ struct tagTNSEOBParams
 {
   REAL8 eta;
   REAL8 omega;
-  REAL8 m1;
-  REAL8 m2;
-  EOBACoefficients        *aCoeffs;
+  REAL8 mass1;
+  REAL8 mass2;
+  REAL8 lambda1;
+  REAL8 lambda2;
+  //EOBACoefficients        *aCoeffs;
   FacWaveformCoeffs       *hCoeffs;
   EOBNonQCCoeffs          *nqcCoeffs;
   NewtonMultipolePrefixes *prefixes;
@@ -494,14 +496,17 @@ TNSEOBParams;
  * it is necessary to place all parameters with the exception of the
  * current guess of the radial momentum within a structure.
  */
-typedef struct tagTNSPr3In {
+typedef struct tagTNS_TNPr3In {
   REAL8 eta;                 /**<< Symmetric mass ratio */
   REAL8 omega;               /**<< Angular frequency (dimensionless combination M omega) */
   REAL8 vr;                  /**<< Radial velocity (dimensionless) */
   REAL8 r;                   /**<< Orbital separation (units of total mass) */
   REAL8 q;                   /**<< Momentum pphi */
-  
-} TNSpr3In;
+  REAL8 m1;
+  REAL8 m2;
+  REAL8 lambda1;
+  REAL8 lambda2;
+} TNS_TNSpr3In;
 
 
 #if 0
@@ -510,4 +515,4 @@ typedef struct tagTNSPr3In {
 }
 #endif
 
-#endif /* _LALSIMIMREOBNRv2_H */
+#endif /* _LALSI/MIMREOBNRv2_H */

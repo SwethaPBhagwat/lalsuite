@@ -152,6 +152,12 @@ REAL8 XLALCalculateEOBA( const REAL8 r,                     /**<< Orbital separa
      + r3 * coeffs->d3
      + r4 * coeffs->d4
      + r5 * coeffs->d5;
+  
+ printf("\n%f",r);
+ printf("r");
+ printf("\n%f",NA/DA);
+ printf("EOBA");
+
 
   return NA/DA;
 }
@@ -195,6 +201,8 @@ REAL8 XLALCalculateEOBdAdr( const REAL8 r,                     /**<< Orbital sep
 
   dA = dNA * DA - dDA * NA;
 
+  printf("\n%f",dA);
+  printf("dA");
   return dA / (DA*DA);
 }
 

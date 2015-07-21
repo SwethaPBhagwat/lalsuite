@@ -303,7 +303,9 @@ int XLALSimIMRTNSEOBDominantMode(
     const REAL8       m2SI,       /**<< Second component mass (in kg) */
     const REAL8       fLower,     /**<< Starting frequency (in Hz) */
     const REAL8       distance,   /**<< Distance to source (in metres) */
-    const REAL8       inclination /**<< Inclination of the source (in radians) */
+    const REAL8       inclination, /**<< Inclination of the source (in radians) */
+    const REAL8       lambda1,
+    const REAL8       lambda2
 );
 
 int XLALSimIMREOBNRv2DominantMode(

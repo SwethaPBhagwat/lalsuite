@@ -32,7 +32,6 @@
 #include <math.h>
 #include <complex.h>
 #include "LALSimIMREOBNRv2.h"
-
 /* Include static functions */
 #include "LALSimInspiraldEnergyFlux.c"
 #include "LALSimIMREOBNewtonianMultipole.c" 
@@ -88,7 +87,7 @@ REAL8 XLALCalculateA6( const REAL8 UNUSED eta /**<< Symmetric mass ratio */
  * Function to pre-compute the coefficients in the EOB A potential function
  */
 //UNUSED static
-//int XLALCalculateEOBACoefficients(
+//int XLALCalculateTNSEOBACoefficients(
 //          EOBACoefficients * const coeffs, /**<< A coefficients (populated in function) */
 //          const REAL8              eta     /**<< Symmetric mass ratio */
 //          )
@@ -124,7 +123,7 @@ REAL8 XLALCalculateA6( const REAL8 UNUSED eta /**<< Symmetric mass ratio */
  * coefficients which should already have been calculated.
  */
 //static
-//REAL8 XLALCalculateEOBA( const REAL8 r,                     /**<< Orbital separation (in units of total mass M) */
+//REAL8 XLALCalculateTNSEOBA( const REAL8 r,                     /**<< Orbital separation (in units of total mass M) */
 //                         EOBACoefficients * restrict coeffs /**<< Pre-computed coefficients for the A function */
 //                       )
 //{
@@ -153,14 +152,10 @@ REAL8 XLALCalculateA6( const REAL8 UNUSED eta /**<< Symmetric mass ratio */
 //    + r4 * coeffs->d4
 //     + r5 * coeffs->d5;
 
-//  return NA/DA;
-//}
-
-
-
-
-static
-REAL8 XLALCalculateEOBA( const REAL8 r, 
+//  return NA/DA;i
+//
+static REAL8
+XLALCalculateTNSEOBA_nontidal( const REAL8 r, 
                          const REAL8 eta                     /**<< Orbital separation (in units of total mass M) */
                      //    EOBACoefficients * restrict coeffs /**<< Pre-computed coefficients for the A function */
                        )
@@ -209,19 +204,201 @@ REAL8 XLALCalculateEOBA( const REAL8 r,
      + u3 * d3
      + u4 * d4
      + u5 * d5;
+
+  printf("\n%f",Num);
+  printf("Num.....");
+  printf("\n%f",Den);
+  printf("Den...");
+  
+  printf("\n%f",u);
+  printf("u...");
   return Num/Den;
 }
 
 
+
+static
+REAL8 XLALCalculateTNSEOBA2capTidal( const REAL8 r,
+                         const REAL8 m1, const REAL8 m2, const REAL8 Lambda2_1, const REAL8 Lambda2_2) 
+{
+
+REAL8 u,u2,X1,X2,star1k2,star2k2,totalk2,A2captidal;
+REAL8 star1alpha1_2,star2alpha1_2,star1alpha2_2,star2alpha2_2;
+REAL8 alpha1bar_2,alpha2bar_2;
+
+
+u=1./r;
+u2=u*u;
+
+if((Lambda2_1==0)&&(Lambda2_2==0))
+ { A2captidal =0.;
+   printf("A2captidal. The 2 lambdas are zero");
+ }
+
+else {
+X1=m1/(m1+m2);
+X2=m2/(m1+m2);
+
+star1k2=3.*(X2/X1)*Lambda2_1;
+star2k2=3.*(X1/X2)*Lambda2_2;
+totalk2=star1k2+star2k2;
+
+//alphaNbar_l
+
+star1alpha1_2=(5./2.)*X1;
+star2alpha1_2=(5./2.)*X2;
+
+star1alpha2_2=((337./28.)*X1*X1)+((1./8.)*X1)+3.;
+star2alpha2_2=((337./28.)*X2*X2)+((1./8.)*X2)+3.;
+
+alpha1bar_2=(star1k2*star1alpha1_2+star2k2*star2alpha1_2)/totalk2;
+alpha2bar_2=(star1k2*star1alpha2_2+star2k2*star2alpha2_2)/totalk2;
+
+
+printf("\n%f",star1alpha1_2);
+printf("star1alpha1_2");
+
+
+printf("\n%f",star1alpha2_2);
+printf("star1alpha2_2");
+
+
+printf("\n%f",alpha1bar_2);
+printf("alpha1bar_2");
+
+printf("\n%f",alpha2bar_2);
+printf("alpha2bar_2");
+
+A2captidal=1+(alpha1bar_2*u)+(alpha2bar_2 *u2);
+}
+printf("\n%f",A2captidal);
+printf("A2captidal");
+return A2captidal;
+}
+
+
+
+static
+REAL8 XLALCalculateTNSEOBA2Tidal( const REAL8 r,
+                         const REAL8 m1, const REAL8 m2, const REAL8 Lambda2_1, const REAL8 Lambda2_2) 
+{
+
+REAL8 u,u3,u6,X1,X2,star1k2,star2k2,totalk2,A2capTidal,A2Tidal;
+
+u=1./r;
+u3=u*u*u;
+u6=u3*u3;
+X1=m1/(m1+m2);
+X2=m2/(m1+m2);
+
+star1k2=3.*(X2/X1)*Lambda2_1;
+star2k2=3.*(X1/X2)*Lambda2_2;
+
+totalk2=star1k2+star2k2;
+
+A2capTidal=XLALCalculateTNSEOBA2capTidal(r,m1,m2,Lambda2_1,Lambda2_2);
+
+A2Tidal=-totalk2*u6*A2capTidal; 
+
+return A2Tidal;
+}
+
+static REAL8
+XLALCalculateTNSEOBA( const REAL8 r,
+                         const REAL8 mass1, const REAL8 mass2, const REAL8 Lambda2_1, const REAL8 Lambda2_2)
+{
+//REAL8 dAtidaldu;
+REAL8 totalMass,eta,A_nonTidal,A2_tidal,A;
+
+totalMass = mass1 + mass2;
+eta = mass1 * mass2 / (totalMass*totalMass);
+
+printf("\n%f",r);
+printf("at radius....");
+A_nonTidal=XLALCalculateTNSEOBA_nontidal(r,eta);
+printf("\n%f",A_nonTidal);
+printf("A_nonTidal....");
+A2_tidal= XLALCalculateTNSEOBA2Tidal(r, mass1, mass2, Lambda2_1, Lambda2_2);
+printf("\n%f",A2_tidal);
+printf("A2_tidal....");
+A=A_nonTidal+A2_tidal;
+return A;
+}
+                         
+
+
+static
+REAL8 XLALCalculateTNSEOBA2tidaldu( const REAL8 r,
+                         const REAL8 m1, const REAL8 m2, const REAL8 Lambda2_1, const REAL8 Lambda2_2)
+{
+REAL8 dAtidaldu;
+REAL8 u,u2,u3,u5,u6,u7,X1,X2,star1k2,star2k2,totalk2;
+REAL8 star1alpha1_2,star2alpha1_2,star1alpha2_2,star2alpha2_2;
+REAL8 alpha1bar_2,alpha2bar_2;
+
+
+u=1./r;
+u2=u*u;
+u3=u2*u;
+u5=u2*u3;
+u6=u3*u3;
+u7=u6*u;
+
+X1=m1/(m1+m2);
+X2=m2/(m1+m2);
+
+if((Lambda2_1==0)&&(Lambda2_2==0))
+ { dAtidaldu =0.;
+  printf("lambdas are zero. I m setting the tidal dAdu to zero");
+ }
+else
+{
+
+star1k2=3.*(X2/X1)*Lambda2_1;
+star2k2=3.*(X1/X2)*Lambda2_2;
+totalk2=star1k2+star2k2;
+
+//alphaNbar_l
+//
+star1alpha1_2=(5./2.)*X1;
+star2alpha1_2=(5./2.)*X2;
+//
+star1alpha2_2=((337./28.)*X1*X1)+((1./8.)*X1)+3.;
+star2alpha2_2=((337./28.)*X2*X2)+((1./8.)*X2)+3.;
+//
+alpha1bar_2=(star1k2*star1alpha1_2+star2k2*star2alpha1_2)/totalk2;
+alpha2bar_2=(star1k2*star1alpha2_2+star2k2*star2alpha2_2)/totalk2;
+
+//star1k2=3.*(X2/X1)*Lambda2_1;
+//star2k2=3.*(X1/X2)*Lambda2_2;
+
+//totalk2=star1k2+star2k2;
+
+dAtidaldu=-totalk2*(6.*u5 + alpha1bar_2*7.*u6 + 8.*alpha2bar_2*u7);
+
+
+printf("\n%f",dAtidaldu);
+printf("dAtidaldu");
+
+printf("\n%f",-dAtidaldu*u2);
+printf("dAdr");
+
+}
+
+return dAtidaldu;
+}
+
+
+//CHECK ME : dAdu need to get updated once u add tidal potential. 
 UNUSED static
-REAL8 XLALCalculateEOBdAdu( const REAL8 r, const REAL8 eta                     /**<< Orbital separation (in units of total mass M) */
+REAL8 XLALCalculateEOB_Nontidal_dAdu( const REAL8 r, const REAL8 eta                     /**<< Orbital separation (in units of total mass M) */
                           //  EOBACoefficients * restrict coeffs /**<< Pre-computed coefficients for the A function */
                           )
 { REAL8 u,u2, u3, u4, u5,logu;
   REAL8 dn1,dd1,dd2,dd3,dd4,dd5;
   REAL8 n1,d1,d2,d3,d4,d5;
   REAL8 a5,a6,a5tot,a6tot,a5tot2,pi2,eta2,pi4;
-  REAL8 A,Num,Den,dNum,dDen,prefactor,dA_u;
+  REAL8 A,Num,Den,dNum,dDen,prefactor,dANonTidal_du;
 
 
   u=1./r;
@@ -276,18 +453,40 @@ REAL8 XLALCalculateEOBdAdu( const REAL8 r, const REAL8 eta                     /
 
 // Derivative of A function with respect to u
   prefactor = A/(Num*Den);
-  dA_u = prefactor*(dNum*Den - dDen*Num);
+  dANonTidal_du = prefactor*(dNum*Den - dDen*Num);
   
-  return dA_u;
+  return dANonTidal_du;
 }
 
 
+static
+REAL8 XLALCalculateEOBdAdu( const REAL8 r,
+                         const REAL8 m1, const REAL8 m2, const REAL8 Lambda2_1, const REAL8 Lambda2_2)
+{
+REAL8 totalMass,eta,dA2tidal_du,dANonTidal_du,dA_du;
+
+totalMass = m1 + m2;
+eta = m1 * m2 / (totalMass*totalMass);
 
 
+dA2tidal_du=XLALCalculateTNSEOBA2tidaldu(r,m1,m2, Lambda2_1,Lambda2_2);
+printf("\n%f",dA2tidal_du);
+printf("dA2tidal_du");
+
+dANonTidal_du=XLALCalculateEOB_Nontidal_dAdu(r, eta);
+printf("\n%f",dANonTidal_du);
+printf("dANonTidal_du");
+
+
+dA_du=dA2tidal_du+dANonTidal_du;
+return dA_du;
+}
 /**
  * Calculated the derivative of the EOB A function with respect to
  * r
- */
+ */ 
+
+//THIS IS NOT GETTING SED ANYWHERE. YOU ONLY HAVE NON TIDAL PEICE IN THIS! 
 static
 REAL8 XLALCalculateEOBdAdr( const REAL8 r, const REAL8 eta                     /**<< Orbital separation (in units of total mass M) */
                           //  EOBACoefficients * restrict coeffs /**<< Pre-computed coefficients for the A function */
@@ -599,7 +798,11 @@ static REAL8 XLALCalculateEOBD( REAL8   r, /**<< Orbital separation (in units of
  * Note that the pr used here is the tortoise co-ordinate.
  */
 static
-REAL8 XLALEffectiveHamiltonian( const REAL8 eta,          /**<< Symmetric mass ratio */
+REAL8 XLALEffectiveHamiltonian( const REAL8 eta,
+				const REAL8 mass1, 
+                                const REAL8 mass2,
+                                const REAL8 lambda1,
+                                const REAL8 lambda2,            /**<< Symmetric mass ratio */
                                 const REAL8 r,            /**<< Orbital separation */
                                 const REAL8 pr,           /**<< Tortoise co-ordinate */
                                 const REAL8 pp           /**<< Momentum pphi */
@@ -614,7 +817,7 @@ REAL8 XLALEffectiveHamiltonian( const REAL8 eta,          /**<< Symmetric mass r
         pr2  = pr * pr;
         pp2  = pp * pp;
 
-        eoba = XLALCalculateEOBA( r, eta );
+        eoba = XLALCalculateTNSEOBA( r, mass1, mass2, lambda1, lambda2 );
         z3   = 2. * ( 4. - 3. * eta ) * eta;
         return sqrt( pr2 + eoba * ( 1.  + pp2/r2 + z3*pr2*pr2/r2 ) );
 }
@@ -1210,15 +1413,19 @@ UNUSED static int XLALSimIMREOBModifyFacWaveformCoefficients(
 static REAL8
 nonKeplerianCoefficient(
                    REAL8Vector * restrict values, /**<< Dynamics r, phi, pr, pphi */
-                   const REAL8       eta         /**<< Symmetric mass ratio */
-                  // EOBACoefficients *coeffs       /**<< Pre-computed A coefficients */
+                   const REAL8       eta,         /**<< Symmetric mass ratio */
+                  const REAL8       mass1,
+                  const REAL8       mass2,
+                  const REAL8       lambda1,
+                  const REAL8       lambda2                                         
+ // EOBACoefficients *coeffs       /**<< Pre-computed A coefficients */
                    )
 {
 
   REAL8 r    = values->data[0];
   REAL8 pphi = values->data[3];
 
-  REAL8 A  = XLALCalculateEOBA( r, eta );
+  REAL8 A  = XLALCalculateTNSEOBA( r, mass1,mass2,lambda1, lambda2 );
   REAL8 dA = XLALCalculateEOBdAdr( r, eta );
 
   return 2. * (1. + 2. * eta * ( -1. + sqrt( (1. + pphi*pphi/(r*r)) * A ) ) )
@@ -1246,7 +1453,7 @@ UNUSED static int  XLALSimIMRTNSEOBGetFactorizedWaveform(
   INT4 status;
   INT4 i;
 
-  REAL8 eta,pi,pi2,eta2;
+  REAL8 eta, mass1, mass2, lambda1, lambda2, pi,pi2,eta2;
   REAL8 r, pr, pp, Omega, v2, vh, vh3,v3, k, hathatk, eulerlogxabs,v4,v5;
   REAL8 Hreal, Heff, Slm, deltalm, rholm, rholmPwrl;
   REAL8 delta22_leading,delta21_leading,delta33_leading,delta31_leading,delta22_Num,delta21_Num,delta33_Num,delta31_Num,delta22_Den, delta21_Den, delta33_Den,delta31_Den;
@@ -1267,6 +1474,10 @@ UNUSED static int  XLALSimIMRTNSEOBGetFactorizedWaveform(
 
 
   eta = params->eta;
+  mass1 = params->mass1;
+  mass2 = params->mass2;
+  lambda1 = params -> lambda1;
+  lambda2 = params -> lambda2;
 
   /* Check our eta was sensible */
   if ( eta > 0.25 )
@@ -1285,7 +1496,7 @@ UNUSED static int  XLALSimIMRTNSEOBGetFactorizedWaveform(
   pr = values->data[2];
   pp = values->data[3];
 
-  Heff  = XLALEffectiveHamiltonian( eta, r, pr, pp);
+  Heff  = XLALEffectiveHamiltonian( eta, mass1, mass2, lambda1,lambda2, r, pr, pp);
   Hreal = sqrt( 1.0 + 2.0 * eta * ( Heff - 1.0) );
   v2    = v * v;
   v3  = v*v2;
@@ -1303,7 +1514,7 @@ UNUSED static int  XLALSimIMRTNSEOBGetFactorizedWaveform(
   /* given by Eq. (18) of Pan et al, PRD84, 124052(2011) */
   /* psi given by Eq. (19) of Pan et al, PRD84, 124052(2011) */
   /* Assign temporarily to vPhi */
-  vPhi = nonKeplerianCoefficient( values, eta );
+  vPhi = nonKeplerianCoefficient( values, eta,mass1,mass2,lambda1,lambda2 );
   /* Assign rOmega value temporarily to vPhi */
   vPhi  = r * cbrt(vPhi);
   /* Assign rOmega * Omega to vPhi */
