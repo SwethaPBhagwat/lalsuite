@@ -173,16 +173,11 @@ XLALSimIMRTNSEOBCalculateNewtonianMultipole(
     XLAL_ERROR( XLAL_EFUNC );
   }
 
-  /* Special treatment for (2,1) and (4,4) modes, defined in Eq. 17ab of PRD84:124052 2011 */
-  if ( (l == 4 && m == 4) || ( l == 2 && m == 1 ) )
-  {
-    *multipole = params->prefixes->values[l][m] * pow( x, (REAL8)(l+epsilon)/2.0 - 1.0)/r;
-  }
-  else
-  {
+  /* IN TNS EOB there is no Special treatment for (2,1) and (4,4) modes, defined in Eq. 17ab of PRD84:124052 2011 */
+  
     *multipole = params->prefixes->values[l][m] * pow( x, (REAL8)(l+epsilon)/2.0);
-  }
-  *multipole *= y;
+ 
+    *multipole *= y;
 
   return XLAL_SUCCESS;
 }

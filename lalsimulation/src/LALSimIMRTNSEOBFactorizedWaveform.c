@@ -1438,14 +1438,140 @@ nonKeplerianCoefficient(
  * mode l,m, for the given values of the dynamics at that point.
  * The function returns XLAL_SUCCESS if everything works out properly,
  * otherwise XLAL_FAILURE will be returned.
- */
+
+*/
+
+static int
+XLALSimIMRTNSEOBCalculateTidal_hlm(
+                 COMPLEX16 *hlm_tidal, /**<< OUTPUT, Newtonian multipole */
+                 REAL8 v,              /**<< Dimensionless parameter \f$\equiv v^2\f$ */
+                 UNUSED REAL8 r,       /**<< Orbital separation (units of total mass M) */
+                 UNUSED  REAL8 phi,            /**<< Orbital phase (in radians) */
+                 UINT4  l,             /**<< Mode l */
+                 INT4  m,              /**<< Mode m */
+                 TNSEOBParams *params,
+                 REAL8Vector * restrict values     /**<< Pre-computed coefficients, parameters, etc. */
+                 )
+{
+REAL8 v2,v3,v10,X1,X2,m1,m2,eta,lambda1,lambda2,Omega;
+REAL8 star1k2,star2k2,betaA_22,betaB_22,prefactorA_22,prefactorB_22,totalMass,x1,x2;
+INT4 epsilon;
+INT4 sign;
+REAL8 vPhi;
+REAL8 c,tidal_peice;
+INT4 status;
+COMPLEX16 hNewton;
+  /* Pre-computed coefficients */
+//TNSFacWaveformCoeffs *hCoeffs = params->hCoeffs;
+
+
+eta = params->eta;
+m1 = params->mass1;
+m2 = params->mass2;
+lambda1 = params -> lambda1;
+lambda2 = params -> lambda2;
+
+printf("Calculating the tidal contribution to h_lm.....");
+v2=v*v;
+v3=v2*v;
+v10=v3*v3*v2*v2;
+
+X1=m1/(m1+m2);
+X2=m2/(m1+m2);
+
+if((lambda2==0.)&&(lambda1==0.))
+ { 
+  printf("Both the lambdas are zero. hlm_tidal to zero");
+  *hlm_tidal=(COMPLEX16)0.;
+ }
+else
+{
+star1k2=3.*(X2/X1)*lambda1;
+star2k2=3.*(X1/X2)*lambda2;
+
+betaA_22 = (-202. + 560.*X1 - 340.*X1*X1 + 45*X1*X1*X1)/(42.*(3.-2.*X1));
+betaB_22 = (-202. + 560.*X2 - 340.*X2*X2 + 45*X2*X2*X2)/(42.*(3.-2.*X2));
+
+prefactorA_22=star1k2*(X1/X2 + 3.)*v10;
+prefactorB_22=star2k2*(X2/X1 + 3.)*v10;
+
+
+//Calculating C_(l+eps).... I have written this structure this way so we can add higher mode correction if needed. But right now this WHOLE function gets called only for l=2... so, basically we could hardcode l=2 if we need it to be faster.  
+   
+  totalMass = m1 + m2;
+
+   epsilon = ( l + m )  % 2;
+
+   x1 = m1 / totalMass;
+   x2 = m2 / totalMass;
+
+   eta = m1*m2/(totalMass*totalMass);
+
+   if  ( abs( m % 2 ) == 0 )
+   {
+     sign = 1;
+   }
+   else
+   {
+     sign = -1;
+   }
+   if  ( m1 != m2 || sign == 1 )
+   {
+     c = pow( x2, l + epsilon - 1 ) + sign * pow(x1, l + epsilon - 1 );
+   }
+   else
+   {
+     switch( l )
+     {
+       case 2:
+         c = -1.0;
+         break;
+       case 3:
+         c = -1.0;
+         break;
+       case 4:
+         c = -0.5;
+         break;
+       default:
+         c = 0.0;
+         break;
+     }
+   }
+
+  Omega = v2 * v;
+
+//Calculating Newtonian Prefactor
+ vPhi = nonKeplerianCoefficient( values, eta,m1,m2,lambda1,lambda2 );
+  /* Assign rOmega value temporarily to vPhi */
+  
+ vPhi  = r * cbrt(vPhi);
+  /* Assign rOmega * Omega to vPhi */
+  vPhi *= Omega;
+status = XLALSimIMRTNSEOBCalculateNewtonianMultipole( &hNewton, vPhi * vPhi, vPhi/Omega,
+            values->data[1], (UINT4)l, m, params );
+  if ( status == XLAL_FAILURE )
+  {
+    XLAL_ERROR( XLAL_EFUNC );
+  }
+
+hNewton=hNewton/(COMPLEX16)c;
+
+tidal_peice=((prefactorA_22*(1.+betaA_22*v2))+(prefactorB_22*(1.+betaB_22*v2)));
+
+*hlm_tidal =hNewton*(COMPLEX16)tidal_peice;
+
+
+}
+  return XLAL_SUCCESS;
+}
+
 UNUSED static int  XLALSimIMRTNSEOBGetFactorizedWaveform( 
                                 COMPLEX16   * restrict hlm,    /**<< The value of hlm (populated by the function) */
                                 REAL8Vector * restrict values, /**<< Vector containing dynamics r, phi, pr, pphi for a given point */
                                 const REAL8 v,                 /**<< Velocity (in geometric units) */
                                 const INT4  l,                 /**<< Mode l */
                                 const INT4  m,                 /**<< Mode m */
-                                TNSEOBParams   * restrict params  /**<< Structure containing pre-computed coefficients, etc. */
+                                TNSEOBParams   * restrict params 
                                 )
 {
 
@@ -1458,7 +1584,7 @@ UNUSED static int  XLALSimIMRTNSEOBGetFactorizedWaveform(
   REAL8 Hreal, Heff, Slm, deltalm, rholm, rholmPwrl;
   REAL8 delta22_leading,delta21_leading,delta33_leading,delta31_leading,delta22_Num,delta21_Num,delta33_Num,delta31_Num,delta22_Den, delta21_Den, delta33_Den,delta31_Den;
   COMPLEX16 Tlm;
-  COMPLEX16 hNewton;
+  COMPLEX16 hNewton,hlm_tidal;
   gsl_sf_result lnr1, arg1, z2;
 
   /* Non-Keplerian velocity */
@@ -1520,9 +1646,20 @@ UNUSED static int  XLALSimIMRTNSEOBGetFactorizedWaveform(
   /* Assign rOmega * Omega to vPhi */
   vPhi *= Omega;
 
+
   /* Calculate the newtonian multipole */
   status = XLALSimIMRTNSEOBCalculateNewtonianMultipole( &hNewton, vPhi * vPhi, vPhi/Omega,
             values->data[1], (UINT4)l, m, params );
+  if ( status == XLAL_FAILURE )
+  {
+    XLAL_ERROR( XLAL_EFUNC );
+  }
+
+
+ /*Calculate the tidal part of h_lm*/
+
+  status = XLALSimIMRTNSEOBCalculateTidal_hlm( &hlm_tidal, vPhi , vPhi/Omega,
+            values->data[1], (UINT4)l, m, params, values );
   if ( status == XLAL_FAILURE )
   {
     XLAL_ERROR( XLAL_EFUNC );
@@ -1908,6 +2045,15 @@ else
 
   *hlm = Tlm * cexp(I * deltalm) * Slm * rholmPwrl;
   *hlm *= hNewton;
+
+//Add tidal corrections to l=2 and m=2 modes
+if  ( l == 2 )
+   {
+     if( m ==2)
+          {
+            *hlm  = *hlm+ hlm_tidal;
+          }
+    }
 
   return XLAL_SUCCESS;
 } 
