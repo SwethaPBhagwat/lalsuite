@@ -135,6 +135,7 @@ size_t find_instant_freq_hlm(const COMPLEX16TimeSeries *hlm,
  * Calculates the initial orbital momentum.
  */
 
+
 REAL8
 XLALpphiInitP4PN(
             const REAL8 r,                     /**<< Initial orbital separation */
@@ -464,23 +465,42 @@ XLALHighSRStoppingCondition(double UNUSED t,       /**<< Current time (required 
                           )
 {
   TNSEOBParams *params = (TNSEOBParams *)funcParams;
-  REAL8 rstop;
+  REAL8 rstop,r;
+  REAL8 eta,mass1,mass2,lambda1,lambda2,A; 
+  r=values[0];
+  eta = params->eta;
+  mass1= params->mass1;
+  mass2=params->mass2;
+  lambda1= params->lambda1;
+  lambda2=params->lambda2;
+  
+  A=XLALCalculateTNSEOBA(r,mass1,mass2, lambda1, lambda2);
+  if(A==0.)
+ {
+  rstop=r;
+  printf("We stop here at");
+  printf("\n%f",rstop);
+ }
+  else
+ {rstop=6.0;
+  printf("We have already reached the distance of 1.0 M and the potential is NOT yet zero. Stop here ANYWAYS!");
+  }
 
 //  rstop=1.0;
-  if ( params->eta > 0.1 )
-  {
+//  if ( params->eta > 0.1 )
+//  {
 //    rstop = 1.25 - params->eta;
-   rstop=10.0;
-   printf("stopping1");
-  }
- else
-  {
+//   rstop=10.0;
+//   printf("stopping1");
+//  }
+// else
+//  {
 //    rstop = 2.1 - 10.0 * params->eta;
-   rstop=10.0;
-   printf("stopping2");
-  }
+//   rstop=10.0;
+//   printf("stopping2");
+ // }
 
-  if ( values[0] <= rstop || isnan(dvalues[3]) || isnan (dvalues[2]) || isnan (dvalues[1]) || isnan (dvalues[0]) )
+  if ( values[0] <= rstop ||isnan (A)|| isnan(dvalues[3]) || isnan (dvalues[2]) || isnan (dvalues[1]) || isnan (dvalues[0]) )
   {
    return 1;
   }
@@ -1265,10 +1285,11 @@ XLALSimIMRTNSEOBGenerator(
 
    count = 0;
 
+
+
    /* Use the new adaptive integrator */
    /* TODO: Implement error checking */
    retLen = XLALAdaptiveRungeKutta4( integrator, &eobParams, values->data, 0., tMax/m, dt/m, &dynamics );
-
 
    printf("low resolution Initegration is done..........");
    /* We should have integrated to the peak of the frequency by now */
@@ -1307,6 +1328,22 @@ for ( cellno=0; cellno<retLen; cellno=cellno+1 )
 
 fclose(fp1);
 
+REAL8 A;
+
+FILE *fpA_low;
+
+fpA_low=fopen("dumpA_lowRes.txt", "w");
+if(fpA_low == NULL)
+    exit(-1);
+//int cellno;
+for ( cellno=0; cellno<retLen; cellno=cellno+1 )
+{  
+   A=XLALCalculateTNSEOBA((double) rVec.data[cellno],mass1,mass2, lambda1, lambda2);
+   fprintf(fpA_low,"\n%f\t%f\t%f", (double) dynamics->data[cellno], (double) rVec.data[cellno],(double)A);
+}
+
+fclose(fpA_low);
+
 
 
 FILE *fp2;
@@ -1331,12 +1368,13 @@ fclose(fp2);
 
 
 
-
    /* We want to use a different stopping criterion for the higher sample rate */
    integrator->stop = XLALHighSRStoppingCondition;
 
    retLen = XLALAdaptiveRungeKutta4( integrator, &eobParams, values->data,
      0, (lengthHiSR-1)*dt/m, dt/m, &dynamicsHi );
+
+
   printf("high res integration is done.............");
    rVecHi.length  = phiVecHi.length = prVecHi.length = pPhiVecHi.length = tVecHi.length = retLen;
    rVecHi.data    = dynamicsHi->data+retLen;
@@ -1346,7 +1384,7 @@ fclose(fp2);
    tVecHi.data    = dynamicsHi->data;
 
 
-//double dynamics_double = (double) dynamics;
+//double dynamics_double = (double) dynamics;_low;
 
 
 FILE *fp;
@@ -1364,6 +1402,20 @@ fclose(fp);
 
 
 
+FILE *fpA;
+
+fpA=fopen("A_dump.txt", "w");
+if(fpA == NULL)
+    exit(-1);
+//int cellno;
+for ( cellno=0; cellno<retLen; cellno=cellno+1 )
+{
+   A=XLALCalculateTNSEOBA((double) rVecHi.data[cellno],mass1,mass2, lambda1, lambda2);
+   fprintf(fpA,"\n%f\t%f\t%f", (double) dynamicsHi->data[cellno], (double) rVecHi.data[cellno], (double)A );
+   }
+
+  fclose(fpA);
+
 
  
    /* We are now finished with the adaptive RK, so we can free its resources */
@@ -1371,22 +1423,22 @@ fclose(fp);
    integrator = NULL;
 
    /* Now we have the dynamics, we tweak the factorized coefficients for the waveform */
-  if ( XLALSimIMREOBModifyFacWaveformCoefficients( &hCoeffs, eta) == XLAL_FAILURE )
-  {
-     XLALDestroyREAL8Vector( sigReHi );
-     XLALDestroyREAL8Vector( sigImHi );
-     XLALDestroyREAL8Vector( phseHi );
-     XLALDestroyREAL8Vector( omegaHi );
-     XLALDestroyREAL8Vector( ampNQC );
-     XLALDestroyREAL8Vector( q1 );
-     XLALDestroyREAL8Vector( q2 );
-     XLALDestroyREAL8Vector( q3 );
-     XLALDestroyREAL8Vector( p1 );
-     XLALDestroyREAL8Vector( p2 );
-     XLALDestroyREAL8Vector( values );
-     XLALDestroyREAL8Vector( dvalues );
-     XLAL_ERROR( XLAL_EFUNC );
-  }
+  //if ( XLALSimIMREOBModifyFacWaveformCoefficients( &hCoeffs, eta) == XLAL_FAILURE )
+ // {
+   //  XLALDestroyREAL8Vector( sigReHi );
+   // XLALDestroyREAL8Vector( sigImHi );
+   //  XLALDestroyREAL8Vector( phseHi );
+   //  XLALDestroyREAL8Vector( omegaHi );
+   //  XLALDestroyREAL8Vector( ampNQC );
+   //  XLALDestroyREAL8Vector( q1 );
+   //  XLALDestroyREAL8Vector( q2 );
+   //  XLALDestroyREAL8Vector( q3 );
+   //  XLALDestroyREAL8Vector( p1 );
+   //  XLALDestroyREAL8Vector( p2 );
+   //  XLALDestroyREAL8Vector( values );
+   //  XLALDestroyREAL8Vector( dvalues );
+   // XLAL_ERROR( XLAL_EFUNC );
+ // }
 
   /* We can now prepare to output the waveform */
   /* We want to start outputting when the 2,2 mode crosses the user-requested fLower */

@@ -205,13 +205,13 @@ XLALCalculateTNSEOBA_nontidal( const REAL8 r,
      + u4 * d4
      + u5 * d5;
 
-  printf("\n%f",Num);
-  printf("Num.....");
-  printf("\n%f",Den);
-  printf("Den...");
+ // printf("\n%f",Num);
+ // printf("Num.....");
+//  printf("\n%f",Den);
+//  printf("Den...");
   
-  printf("\n%f",u);
-  printf("u...");
+//  printf("\n%f",u);
+//  printf("u...");
   return Num/Den;
 }
 
@@ -239,8 +239,8 @@ else {
 X1=m1/(m1+m2);
 X2=m2/(m1+m2);
 
-star1k2=3.*(X2/X1)*Lambda2_1;
-star2k2=3.*(X1/X2)*Lambda2_2;
+star1k2=3.*(X2/X1)*Lambda2_1*(X1*X1*X1*X1*X1);
+star2k2=3.*(X1/X2)*Lambda2_2*(X2*X2*X2*X2*X2);
 totalk2=star1k2+star2k2;
 
 //alphaNbar_l
@@ -255,24 +255,24 @@ alpha1bar_2=(star1k2*star1alpha1_2+star2k2*star2alpha1_2)/totalk2;
 alpha2bar_2=(star1k2*star1alpha2_2+star2k2*star2alpha2_2)/totalk2;
 
 
-printf("\n%f",star1alpha1_2);
-printf("star1alpha1_2");
+//printf("\n%f",star1alpha1_2);
+//printf("star1alpha1_2");
 
 
-printf("\n%f",star1alpha2_2);
-printf("star1alpha2_2");
+//printf("\n%f",star1alpha2_2);
+//printf("star1alpha2_2");
 
 
-printf("\n%f",alpha1bar_2);
-printf("alpha1bar_2");
+//printf("\n%f",alpha1bar_2);
+//printf("alpha1bar_2");
 
-printf("\n%f",alpha2bar_2);
-printf("alpha2bar_2");
+//printf("\n%f",alpha2bar_2);
+//printf("alpha2bar_2");
 
 A2captidal=1+(alpha1bar_2*u)+(alpha2bar_2 *u2);
 }
-printf("\n%f",A2captidal);
-printf("A2captidal");
+//printf("\n%f",A2captidal);
+//printf("A2captidal");
 return A2captidal;
 }
 
@@ -291,8 +291,8 @@ u6=u3*u3;
 X1=m1/(m1+m2);
 X2=m2/(m1+m2);
 
-star1k2=3.*(X2/X1)*Lambda2_1;
-star2k2=3.*(X1/X2)*Lambda2_2;
+star1k2=3.*(X2/X1)*Lambda2_1*(X1*X1*X1*X1*X1);
+star2k2=3.*(X1/X2)*Lambda2_2*(X2*X2*X2*X2*X2);
 
 totalk2=star1k2+star2k2;
 
@@ -313,14 +313,14 @@ REAL8 totalMass,eta,A_nonTidal,A2_tidal,A;
 totalMass = mass1 + mass2;
 eta = mass1 * mass2 / (totalMass*totalMass);
 
-printf("\n%f",r);
-printf("at radius....");
+//printf("\n%f",r);
+//printf("at radius....");
 A_nonTidal=XLALCalculateTNSEOBA_nontidal(r,eta);
-printf("\n%f",A_nonTidal);
-printf("A_nonTidal....");
+//printf("\n%f",A_nonTidal);
+//printf("A_nonTidal....");
 A2_tidal= XLALCalculateTNSEOBA2Tidal(r, mass1, mass2, Lambda2_1, Lambda2_2);
-printf("\n%f",A2_tidal);
-printf("A2_tidal....");
+//printf("\n%f",A2_tidal);
+//printf("A2_tidal....");
 A=A_nonTidal+A2_tidal;
 return A;
 }
@@ -354,8 +354,8 @@ if((Lambda2_1==0)&&(Lambda2_2==0))
 else
 {
 
-star1k2=3.*(X2/X1)*Lambda2_1;
-star2k2=3.*(X1/X2)*Lambda2_2;
+star1k2=3.*(X2/X1)*Lambda2_1*(X1*X1*X1*X1*X1);
+star2k2=3.*(X1/X2)*Lambda2_2*(X2*X2*X2*X2*X2);
 totalk2=star1k2+star2k2;
 
 //alphaNbar_l
@@ -377,11 +377,11 @@ alpha2bar_2=(star1k2*star1alpha2_2+star2k2*star2alpha2_2)/totalk2;
 dAtidaldu=-totalk2*(6.*u5 + alpha1bar_2*7.*u6 + 8.*alpha2bar_2*u7);
 
 
-printf("\n%f",dAtidaldu);
-printf("dAtidaldu");
+//printf("\n%f",dAtidaldu);
+//printf("dAtidaldu");
 
-printf("\n%f",-dAtidaldu*u2);
-printf("dAdr");
+//printf("\n%f",-dAtidaldu*u2);
+//printf("dAdr");
 
 }
 
@@ -470,12 +470,12 @@ eta = m1 * m2 / (totalMass*totalMass);
 
 
 dA2tidal_du=XLALCalculateTNSEOBA2tidaldu(r,m1,m2, Lambda2_1,Lambda2_2);
-printf("\n%f",dA2tidal_du);
-printf("dA2tidal_du");
+//printf("\n%f",dA2tidal_du);
+//printf("dA2tidal_du");
 
 dANonTidal_du=XLALCalculateEOB_Nontidal_dAdu(r, eta);
-printf("\n%f",dANonTidal_du);
-printf("dANonTidal_du");
+//printf("\n%f",dANonTidal_du);
+//printf("dANonTidal_du");
 
 
 dA_du=dA2tidal_du+dANonTidal_du;
@@ -843,11 +843,11 @@ UNUSED static int XLALSimIMRTNSEOBCalcFacWaveformCoefficients(
 
   REAL8 dM, dM2; //dM3;
 
-  REAL8 a = 0;
-  REAL8 a2 = 0;
-  REAL8 a3 = 0;
-  REAL8 chiS = 0;
-  REAL8 chiA = 0;
+  REAL8 a = 0.;
+  REAL8 a2 = 0.;
+  REAL8 a3 = 0.;
+  REAL8 chiS = 0.;
+  REAL8 chiA = 0.;
 
   /* Combination which appears a lot */
   REAL8 m1Plus3eta, m1Plus3eta2, m1Plus3eta3;
@@ -1380,30 +1380,30 @@ UNUSED static int XLALSimIMRTNSEOBCalcFacWaveformCoefficients(
  * SHOULD ALREADY HAVE BEEN CALCULATED using XLALCalcFacWaveformCoefficients() prior
  * to calling this function.
  */
-UNUSED static int XLALSimIMREOBModifyFacWaveformCoefficients( 
-                                       TNSFacWaveformCoeffs * const coeffs, /**<< Structure containing coefficients */
-                                       const REAL8 eta                   /**<< Symmetric mass ratio */
-                                     )
-{
-
-  if ( !coeffs )
-  {
-    XLAL_ERROR( XLAL_EINVAL );
-  }
+//UNUSED static int XLALSimIMREOBModifyFacWaveformCoefficients( 
+//                                       TNSFacWaveformCoeffs * const coeffs, /**<< Structure containing coefficients */
+//                                       const REAL8 eta                   /**<< Symmetric mass ratio */
+//                                     )
+//{
+//
+//  if ( !coeffs )
+//  {
+//    XLAL_ERROR( XLAL_EINVAL );
+//  }
 
   /* Tweak the relevant coefficients for the generation of the waveform */
-  coeffs->rho21v6 += -5. * eta;
-  coeffs->rho33v6 += -20. * eta;
-  coeffs->rho44v6 += -15. * eta;
-  coeffs->rho55v6 += 4. * eta;
+//  coeffs->rho21v6 += -5. * eta;
+//  coeffs->rho33v6 += -20. * eta;
+//  coeffs->rho44v6 += -15. * eta;
+//  coeffs->rho55v6 += 4. * eta;
 
-  coeffs->delta21v7 += 30. * eta;
-  coeffs->delta33v7 += -10. * eta;
-  coeffs->delta44v5 += -70. * eta;
-  coeffs->delta55v5 += 40. * eta;
+//  coeffs->delta21v7 += 30. * eta;
+//  coeffs->delta33v7 += -10. * eta;
+//  coeffs->delta44v5 += -70. * eta;
+//  coeffs->delta55v5 += 40. * eta;
 
-  return XLAL_SUCCESS;
-}
+//  return XLAL_SUCCESS;
+//}
 
 /**
  * Computes the non-Keplerian correction to the velocity as determined from the
@@ -1486,8 +1486,8 @@ if((lambda2==0.)&&(lambda1==0.))
  }
 else
 {
-star1k2=3.*(X2/X1)*lambda1;
-star2k2=3.*(X1/X2)*lambda2;
+star1k2=3.*(X2/X1)*lambda1*(X1*X1*X1*X1*X1);
+star2k2=3.*(X1/X2)*lambda2*(X2*X2*X2*X2*X2);
 
 betaA_22 = (-202. + 560.*X1 - 340.*X1*X1 + 45*X1*X1*X1)/(42.*(3.-2.*X1));
 betaB_22 = (-202. + 560.*X2 - 340.*X2*X2 + 45*X2*X2*X2)/(42.*(3.-2.*X2));
