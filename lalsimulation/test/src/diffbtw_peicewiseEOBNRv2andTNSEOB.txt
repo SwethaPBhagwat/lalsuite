@@ -1,0 +1,675 @@
+41a42
+> #include "LALSimIMRTNSEOB.h"
+49d49
+< #include "LALSimIMREOBHybridRingdown.c"
+86,87c86,87
+<                              REAL8 pPhi);
+<                             
+---
+>                              REAL8 pPhi,
+>                              EOBACoefficients *aCoeffs );
+106c106
+<                         const REAL8 eta);
+---
+>                        EOBACoefficients * restrict coeffs );
+112c112
+< REAL8 XLALvrP4PN(const REAL8 r, const REAL8 omega, pr3In *params);
+---
+> REAL8 XLALvrP4PN(const REAL8 r, const REAL8 omega, TNSpr3In *params);
+131c131
+<             const REAL8 eta
+---
+>             EOBACoefficients * restrict coeffs /**<< Pre-computed EOB A coefficients */
+142,143c142,143
+<   A  = XLALCalculateEOBA( r, eta );
+<   dA = - r*r * XLALCalculateEOBdAdr( r, eta );
+---
+>   A  = XLALCalculateEOBA( r, coeffs );
+>   dA = - r*r * XLALCalculateEOBdAdr( r, coeffs );
+160c160
+<              void *params /**<< The pr3In structure containing necessary parameters */
+---
+>              void *params /**<< The TNSpr3In structure containing necessary parameters */
+167c167
+<   pr3In *ak;
+---
+>   TNSpr3In *ak;
+171c171
+<   ak = (pr3In *) params;
+---
+>   ak = (TNSpr3In *) params;
+185c185
+<    A = XLALCalculateEOBA( r, eta );
+---
+>    A = XLALCalculateEOBA( r, ak->aCoeffs );
+221,222c221,222
+<    A  = XLALCalculateEOBA( r, eta );
+<    dA = XLALCalculateEOBdAdr( r, eta );
+---
+>    A  = XLALCalculateEOBA( r, coeffs );
+>    dA = XLALCalculateEOBdAdr( r, coeffs );
+241c241
+<             void *params /**<< pr3In structure, containing useful parameters, including omega */
+---
+>             void *params /**<< TNSpr3In structure, containing useful parameters, including omega */
+245c245
+<   pr3In *pr3in;
+---
+>   TNSpr3In *TNSpr3In;
+252c252
+<   pr3in = (pr3In *) params;
+---
+>   TNSpr3In = (TNSpr3In *) params;
+254,255c254,255
+<   omega1 = pr3in->omega;
+<   omega2 = omegaofrP4PN(r, pr3in->eta, pr3in->aCoeffs);
+---
+>   omega1 = TNSpr3In->omega;
+>   omega2 = omegaofrP4PN(r, TNSpr3In->eta, TNSpr3In->aCoeffs);
+274c274
+<   EOBParams *params = NULL;
+---
+>   TNSEOBParams *params = NULL;
+286,287c286
+<   REAL8 flux, fluxr;
+<   REAL8 c1,c2;
+---
+>   REAL8 flux;
+294c293
+<   params = (EOBParams *) funcParams;
+---
+>   params = (TNSEOBParams *) funcParams;
+303,304d301
+< //p = pr and q=p_phi 
+< //
+317,318c314,315
+<   A          = XLALCalculateEOBA(r, eta );
+<   dAdr       = XLALCalculateEOBdAdr(r, eta );
+---
+>   A          = XLALCalculateEOBA(r, params->aCoeffs );
+>   dAdr       = XLALCalculateEOBdAdr(r, params->aCoeffs );
+326c323
+<   Heff  = XLALEffectiveHamiltonian( eta, r, p, q);
+---
+>   Heff  = XLALEffectiveHamiltonian( eta, r, p, q, params->aCoeffs );
+340,342d336
+<   c1= - 1957./1680. - ((227./140.)*eta);
+<   c2 = -(25672541./5080320.)+(165703.*eta/70560.)+(753.*eta*eta/560.);  
+<   fluxr=-5./3. * (p/q) * flux * (1. + (c1*u) + (c2*u2));  
+345,349c339,341
+< //  dvalues[2] = 0.5 * AoverSqrtD * u3 * (  2.0 * ( q2 + p4 * z3) * A
+<   //                   - r * ( q2 + r2 + p4 * z3 ) * dAdr ) / HeffHreal
+<   //                   - (p / q) * (flux / (eta * omega));
+< 
+<   dvalues[2]=-((AoverSqrtD/(2.*HeffHreal))*(dAdr+((q2/r2)*(dAdr-(2.*A/r)))+(z3*p4*((dAdr/r2)-(2.*A*u3))))) + (eta*fluxr);
+---
+>   dvalues[2] = 0.5 * AoverSqrtD * u3 * (  2.0 * ( q2 + p4 * z3) * A
+>                      - r * ( q2 + r2 + p4 * z3 ) * dAdr ) / HeffHreal
+>                      - (p / q) * (flux / (eta * omega));
+364c356,357
+<                             REAL8 pPhi               /**<< Momentum pphi */
+---
+>                             REAL8 pPhi,               /**<< Momentum pphi */
+>                             EOBACoefficients *aCoeffs /**<< Pre-computed EOB A coefficients */
+370,371c363,364
+<   A    = XLALCalculateEOBA( r, eta );
+<   Heff = XLALEffectiveHamiltonian( eta, r, pr, pPhi );
+---
+>   A    = XLALCalculateEOBA( r, aCoeffs );
+>   Heff = XLALEffectiveHamiltonian( eta, r, pr, pPhi, aCoeffs );
+391c384
+<   EOBParams *params = (EOBParams *)funcParams;
+---
+>   TNSEOBParams *params = (TNSEOBParams *)funcParams;
+416c409
+<   EOBParams *params = (EOBParams *)funcParams;
+---
+>   TNSEOBParams *params = (TNSEOBParams *)funcParams;
+441c434
+<                  pr3In *params      /**<< pr3In structure containing some necessary parameters */
+---
+>                  TNSpr3In *params      /**<< TNSpr3In structure containing some necessary parameters */
+517,573c510,566
+< static REAL8
+< GetRingdownAttachCombSize( 
+<                          INT4 l, /**<< Mode l */
+<                          INT4 m  /**<< Mode m */
+<                          )
+< {
+< 
+<    switch ( l )
+<    {
+<      case 2:
+<        switch ( m )
+<        {
+<          case 2:
+<            return 5.;
+<            break;
+<          case 1:
+<            return 8.;
+<            break;
+<          default:
+<            XLAL_ERROR_REAL8( XLAL_EINVAL );
+<            break;
+<         }
+<         break;
+<      case 3:
+<        if ( m == 3 )
+<        {
+<          return 12.;
+<        }
+<        else
+<        {
+<          XLAL_ERROR_REAL8( XLAL_EINVAL );
+<        }
+<        break;
+<      case 4:
+<        if ( m == 4 )
+<        {
+<          return 9.;
+<        }
+<        else
+<        {
+<          XLAL_ERROR_REAL8( XLAL_EINVAL );
+<        }
+<        break;
+<      case 5:
+<        if ( m == 5 )
+<        {
+<          return 8.;
+<        }
+<        else
+<        {
+<          XLAL_ERROR_REAL8( XLAL_EINVAL );
+<        }
+<        break;
+<      default:
+<        XLAL_ERROR_REAL8( XLAL_EINVAL );
+<        break;
+<   }
+---
+> //static REAL8
+> //GetRingdownAttachCombSize( 
+> //                         INT4 l, /**<< Mode l */
+> //                        INT4 m  /**<< Mode m */
+> //                         )
+> //{
+> 
+> //   switch ( l )
+> //   {
+> //     case 2:
+> //       switch ( m )
+> //       {
+> //         case 2:
+> ///           return 5.;
+> //           break;
+> ///         case 1:
+> //           return 8.;
+> //           break;
+> //         default:
+> //           XLAL_ERROR_REAL8( XLAL_EINVAL );
+> //           break;
+> //        }
+> //        break;
+> //     case 3:
+> //       if ( m == 3 )
+> //       {
+> //         return 12.;
+> //       }
+> //       else
+> //       {
+> //         XLAL_ERROR_REAL8( XLAL_EINVAL );
+> //       }
+> //       break;
+> //     case 4:
+> //       if ( m == 4 )
+> //       {
+> //         return 9.;
+> //       }
+> //       else
+> //       {
+> //         XLAL_ERROR_REAL8( XLAL_EINVAL );
+> //       }
+> //       break;
+> //     case 5:
+> //       if ( m == 5 )
+> //       {
+> //         return 8.;
+> //       }
+> //       else
+> //       {
+> //         XLAL_ERROR_REAL8( XLAL_EINVAL );
+> //       }
+> //       break;
+> //     default:
+> //       XLAL_ERROR_REAL8( XLAL_EINVAL );
+> //       break;
+> //  }
+577,578c570,571
+<   XLALPrintError( "We shouldn't ever reach this point!\n" );
+<   XLAL_ERROR_REAL8( XLAL_EINVAL );
+---
+> //  XLALPrintError( "We shouldn't ever reach this point!\n" );
+> //  XLAL_ERROR_REAL8( XLAL_EINVAL );
+580c573
+< }
+---
+> //}
+760c753
+< XLALSimIMREOBNRv2Generator(
+---
+> XLALSimIMRTNSEOBGenerator(
+773c766
+< {
+---
+> {  printf("Entered TNSEOB");
+801c794
+<    pr3In                   pr3in;
+---
+>    TNSpr3In                   TNSTNSpr3In;
+804c797
+<    EOBParams eobParams;
+---
+>    TNSEOBParams eobParams;
+806c799
+<    FacWaveformCoeffs       hCoeffs;
+---
+>    TNSFacWaveformCoeffs       hCoeffs;
+862c855
+<    REAL8Vector             *rdMatchPoint;
+---
+>    //REAL8Vector             *rdMatchPoint;
+868c861
+<    printf("line 868");
+---
+> 
+1052c1045
+<    lengthHiSR = ( nStepBack + (UINT4)(2. * EOB_RD_EFOLDS / cimag(modefreqs->data[0]) / dt) ) * resampFac;
+---
+>    lengthHiSR = ( nStepBack ) * resampFac;
+1065c1058
+<    printf("line 1065");
+---
+> 
+1067,1068c1060,1061
+<    pr3in.eta = eta;
+<    pr3in.aCoeffs = &aCoeffs;
+---
+>    TNSpr3In.eta = eta;
+>    TNSpr3In.aCoeffs = &aCoeffs;
+1071c1064
+<    /* Therefore, we should reset pr3in.omega later if necessary. */
+---
+>    /* Therefore, we should reset TNSpr3In.omega later if necessary. */
+1074c1067
+<    pr3in.omega = omega;
+---
+>    TNSpr3In.omega = omega;
+1076c1069
+<    /* if ( XLALrOfOmegaP4PN(rInitMin, &pr3in) < 0.)
+---
+>    /* if ( XLALrOfOmegaP4PN(rInitMin, &TNSpr3In) < 0.)
+1084c1077
+<    if ( XLALrOfOmegaP4PN(10., &pr3in) < 0.)
+---
+>    if ( XLALrOfOmegaP4PN(10., &TNSpr3In) < 0.)
+1088c1081
+<      pr3in.omega = omega;
+---
+>      TNSpr3In.omega = omega;
+1092c1085
+<    if ( XLALrOfOmegaP4PN(rInitMax, &pr3in) > 0.)
+---
+>    if ( XLALrOfOmegaP4PN(rInitMax, &TNSpr3In) > 0.)
+1100c1093
+<               rInitMax, xacc, &pr3in);
+---
+>               rInitMax, xacc, &TNSpr3In);
+1114c1107
+<    pr3in.r = r;
+---
+>    TNSpr3In.r = r;
+1120,1121c1113,1114
+<    pr3in.omega = omega;
+<    q = XLALpphiInitP4PN(r, eta );
+---
+>    TNSpr3In.omega = omega;
+>    q = XLALpphiInitP4PN(r, &aCoeffs );
+1123,1124c1116,1117
+<    pr3in.q = q;
+<    pr3in.vr = XLALvrP4PN(r, omega, &pr3in);
+---
+>    TNSpr3In.q = q;
+>    TNSpr3In.vr = XLALvrP4PN(r, omega, &TNSpr3In);
+1126c1119
+<    p = XLALDBisectionFindRoot( XLALprInitP4PN, prInitMin, prInitMax, xacc, &pr3in);
+---
+>    p = XLALDBisectionFindRoot( XLALprInitP4PN, prInitMin, prInitMax, xacc, &TNSpr3In);
+1135c1128
+<    p = p * XLALCalculateEOBA(r, eta);
+---
+>    p = p * XLALCalculateEOBA(r, &aCoeffs);
+1189d1181
+<    printf("line 1189");
+1214c1206
+<    printf("line 1214");
+---
+> 
+1218d1209
+<    printf ("line 1217");
+1225c1216
+<    printf("1225");
+---
+> 
+1231c1222
+<    printf("line 1231");
+---
+> 
+1234c1225
+<   printf("line 1234");
+---
+> 
+1237c1228
+<   printf("line 1237");
+---
+> 
+1281c1272
+<     omega = XLALCalculateOmega( eta, rVec.data[i], prVec.data[i], pPhiVec.data[i] );
+---
+>     omega = XLALCalculateOmega( eta, rVec.data[i], prVec.data[i], pPhiVec.data[i], &aCoeffs );
+1313c1304
+<     omega = XLALCalculateOmega( eta, rVecHi.data[i], prVecHi.data[i], pPhiVecHi.data[i] );
+---
+>     omega = XLALCalculateOmega( eta, rVecHi.data[i], prVecHi.data[i], pPhiVecHi.data[i], &aCoeffs );
+1392c1383
+<   /* Their length should be the length of the inspiral + the merger/ringdown */
+---
+>   /* Their length should be the length of the inspiral. I have removed the merger/ringdown length from lengthHiSR */
+1451c1442
+<       omega = XLALCalculateOmega( eta, rVecHi.data[i], prVecHi.data[i], pPhiVecHi.data[i] );
+---
+>       omega = XLALCalculateOmega( eta, rVecHi.data[i], prVecHi.data[i], pPhiVecHi.data[i], &aCoeffs );
+1486c1477
+<        omega = XLALCalculateOmega( eta, rVec.data[i], prVec.data[i], pPhiVec.data[i] );
+---
+>        omega = XLALCalculateOmega( eta, rVec.data[i], prVec.data[i], pPhiVec.data[i], &aCoeffs );
+1498c1489
+<        hLM *= hNQC;
+---
+> //       hLM *= hNQC;
+1509c1500
+<       omega = XLALCalculateOmega( eta, rVecHi.data[i], prVecHi.data[i], pPhiVecHi.data[i] );
+---
+>       omega = XLALCalculateOmega( eta, rVecHi.data[i], prVecHi.data[i], pPhiVecHi.data[i], &aCoeffs );
+1522c1513
+<       hLM *= hNQC;
+---
+> //      hLM *= hNQC;
+1530,1550c1521,1541
+<      rdMatchPoint = XLALCreateREAL8Vector( 3 );
+<      if ( !rdMatchPoint )
+<      {
+<        XLALDestroyCOMPLEX16TimeSeries( sigMode );
+<        XLALDestroyREAL8TimeSeries( *hplus );  *hplus  = NULL;
+<        XLALDestroyREAL8TimeSeries( *hcross ); *hcross = NULL;
+<        XLALDestroySphHarmTimeSeries( *h_lms ); *h_lms = NULL;
+<        XLALDestroyREAL8Vector( sigReHi );
+<        XLALDestroyREAL8Vector( sigImHi );
+<        XLALDestroyREAL8Vector( phseHi );
+<        XLALDestroyREAL8Vector( omegaHi );
+<        XLALDestroyREAL8Vector( ampNQC );
+<        XLALDestroyREAL8Vector( q1 );
+<        XLALDestroyREAL8Vector( q2 );
+<        XLALDestroyREAL8Vector( q3 );
+<        XLALDestroyREAL8Vector( p1 );
+<        XLALDestroyREAL8Vector( p2 );
+<        XLALDestroyREAL8Vector( values );
+<        XLALDestroyREAL8Vector( dvalues );
+<        XLAL_ERROR( XLAL_ENOMEM );
+<      }
+---
+>  //    rdMatchPoint = XLALCreateREAL8Vector( 3 );
+> //     if ( !rdMatchPoint )
+> //     {
+>   //     XLALDestroyCOMPLEX16TimeSeries( sigMode );
+>   //     XLALDestroyREAL8TimeSeries( *hplus );  *hplus  = NULL;
+>   //     XLALDestroyREAL8TimeSeries( *hcross ); *hcross = NULL;
+>   //     XLALDestroySphHarmTimeSeries( *h_lms ); *h_lms = NULL;
+>   //     XLALDestroyREAL8Vector( sigReHi );
+>   //     XLALDestroyREAL8Vector( sigImHi );
+>   //     XLALDestroyREAL8Vector( phseHi );
+>   //     XLALDestroyREAL8Vector( omegaHi );
+>   //     XLALDestroyREAL8Vector( ampNQC );
+>   //     XLALDestroyREAL8Vector( q1 );
+>   //     XLALDestroyREAL8Vector( q2 );
+>   //     XLALDestroyREAL8Vector( q3 );
+>   //     XLALDestroyREAL8Vector( p1 );
+>   //     XLALDestroyREAL8Vector( p2 );
+>   //     XLALDestroyREAL8Vector( values );
+>   //     XLALDestroyREAL8Vector( dvalues );
+>   //     XLAL_ERROR( XLAL_ENOMEM );
+>   //   }
+1553,1573c1544,1576
+<      if ( ceil( tStepBack / ( 2.0 * dt ) ) > peakIdx )
+<      {
+<        XLALPrintError( "Invalid index for first ringdown matching point.\n" );
+<        XLALDestroyCOMPLEX16TimeSeries( sigMode );
+<        XLALDestroyREAL8TimeSeries( *hplus );  *hplus  = NULL;
+<        XLALDestroyREAL8TimeSeries( *hcross ); *hcross = NULL;
+<        XLALDestroySphHarmTimeSeries( *h_lms ); *h_lms = NULL;
+<        XLALDestroyREAL8Vector( sigReHi );
+<        XLALDestroyREAL8Vector( sigImHi );
+<        XLALDestroyREAL8Vector( phseHi );
+<        XLALDestroyREAL8Vector( omegaHi );
+<        XLALDestroyREAL8Vector( ampNQC );
+<        XLALDestroyREAL8Vector( q1 );
+<        XLALDestroyREAL8Vector( q2 );
+<        XLALDestroyREAL8Vector( q3 );
+<        XLALDestroyREAL8Vector( p1 );
+<        XLALDestroyREAL8Vector( p2 );
+<        XLALDestroyREAL8Vector( values );
+<        XLALDestroyREAL8Vector( dvalues );
+<        XLAL_ERROR( XLAL_EFAILED );
+<      }
+---
+> //     if ( ceil( tStepBack / ( 2.0 * dt ) ) > peakIdx )
+> //     {
+> //       XLALPrintError( "Invalid index for first ringdown matching point.\n" );
+> //       XLALDestroyCOMPLEX16TimeSeries( sigMode );
+> //       XLALDestroyREAL8TimeSeries( *hplus );  *hplus  = NULL;
+> //       XLALDestroyREAL8TimeSeries( *hcross ); *hcross = NULL;
+> //       XLALDestroySphHarmTimeSeries( *h_lms ); *h_lms = NULL;
+> //       XLALDestroyREAL8Vector( sigReHi );
+> //       XLALDestroyREAL8Vector( sigImHi );
+> //       XLALDestroyREAL8Vector( phseHi );
+> //       XLALDestroyREAL8Vector( omegaHi );
+> //       XLALDestroyREAL8Vector( ampNQC );
+> //       XLALDestroyREAL8Vector( q1 );
+> //       XLALDestroyREAL8Vector( q2 );
+> //       XLALDestroyREAL8Vector( q3 );
+> //       XLALDestroyREAL8Vector( p1 );
+> //       XLALDestroyREAL8Vector( p2 );
+> //       XLALDestroyREAL8Vector( values );
+> //       XLALDestroyREAL8Vector( dvalues );
+> //       XLAL_ERROR( XLAL_EFAILED );
+> //     }
+> 
+> //     REAL8 combSize = GetRingdownAttachCombSize( modeL, modeM );
+> //     REAL8 nrPeakDeltaT = XLALSimIMREOBGetNRPeakDeltaT( modeL, modeM, eta );
+> 
+> //     if ( combSize > timePeak )
+> //     {
+> //       XLALPrintWarning( "Comb size not as big as it should be\n" );
+> //     }
+> 
+> //     rdMatchPoint->data[0] = combSize < timePeak + nrPeakDeltaT ? timePeak + nrPeakDeltaT - combSize : 0;
+> //     rdMatchPoint->data[1] = timePeak + nrPeakDeltaT;
+> //     rdMatchPoint->data[2] = dynamicsHi->data[finalIdx];
+1575,1588c1578,1579
+<      REAL8 combSize = GetRingdownAttachCombSize( modeL, modeM );
+<      REAL8 nrPeakDeltaT = XLALSimIMREOBGetNRPeakDeltaT( modeL, modeM, eta );
+< 
+<      if ( combSize > timePeak )
+<      {
+<        XLALPrintWarning( "Comb size not as big as it should be\n" );
+<      }
+< 
+<      rdMatchPoint->data[0] = combSize < timePeak + nrPeakDeltaT ? timePeak + nrPeakDeltaT - combSize : 0;
+<      rdMatchPoint->data[1] = timePeak + nrPeakDeltaT;
+<      rdMatchPoint->data[2] = dynamicsHi->data[finalIdx];
+< 
+<      rdMatchPoint->data[0] -= fmod( rdMatchPoint->data[0], dt/m );
+<      rdMatchPoint->data[1] -= fmod( rdMatchPoint->data[1], dt/m );
+---
+>  //    rdMatchPoint->data[0] -= fmod( rdMatchPoint->data[0], dt/m );
+> //     rdMatchPoint->data[1] -= fmod( rdMatchPoint->data[1], dt/m );
+1590,1612c1581,1605
+<      xlalStatus = XLALSimIMREOBHybridAttachRingdown(sigReHi, sigImHi,
+<                    modeL, modeM, dt, mass1, mass2, 0, 0, 0, 0, 0, 0, &tVecHi, rdMatchPoint, EOBNRv2 );
+<      if (xlalStatus != XLAL_SUCCESS )
+<      {
+<        XLALDestroyREAL8Vector( rdMatchPoint );
+<        XLALDestroyCOMPLEX16TimeSeries( sigMode );
+<        XLALDestroyREAL8TimeSeries( *hplus );  *hplus  = NULL;
+<        XLALDestroyREAL8TimeSeries( *hcross ); *hcross = NULL;
+<        XLALDestroySphHarmTimeSeries( *h_lms ); *h_lms = NULL;
+<        XLALDestroyREAL8Vector( sigReHi );
+<        XLALDestroyREAL8Vector( sigImHi );
+<        XLALDestroyREAL8Vector( phseHi );
+<        XLALDestroyREAL8Vector( omegaHi );
+<        XLALDestroyREAL8Vector( ampNQC );
+<        XLALDestroyREAL8Vector( q1 );
+<        XLALDestroyREAL8Vector( q2 );
+<        XLALDestroyREAL8Vector( q3 );
+<        XLALDestroyREAL8Vector( p1 );
+<        XLALDestroyREAL8Vector( p2 );
+<        XLALDestroyREAL8Vector( values );
+<        XLALDestroyREAL8Vector( dvalues );
+<        XLAL_ERROR( XLAL_EFUNC );
+<      }
+---
+> //     xlalStatus = XLALSimIMREOBHybridAttachRingdown(sigReHi, sigImHi,
+> //                   modeL, modeM, dt, mass1, mass2, 0, 0, 0, 0, 0, 0, &tVecHi, rdMatchPoint, EOBNRv2 );
+> //     if (xlalStatus != XLAL_SUCCESS )
+> //     {
+> //       XLALDestroyREAL8Vector( rdMatchPoint );
+> //       XLALDestroyCOMPLEX16TimeSeries( sigMode );
+> //       XLALDestroyREAL8TimeSeries( *hplus );  *hplus  = NULL;
+> //       XLALDestroyREAL8TimeSeries( *hcross ); *hcross = NULL;
+> //       XLALDestroySphHarmTimeSeries( *h_lms ); *h_lms = NULL;
+> //       XLALDestroyREAL8Vector( sigReHi );
+> //       XLALDestroyREAL8Vector( sigImHi );
+> //       XLALDestroyREAL8Vector( phseHi );
+> //       XLALDestroyREAL8Vector( omegaHi );
+> //       XLALDestroyREAL8Vector( ampNQC );
+> //       XLALDestroyREAL8Vector( q1 );
+> //       XLALDestroyREAL8Vector( q2 );
+> //       XLALDestroyREAL8Vector( q3 );
+> //       XLALDestroyREAL8Vector( p1 );
+> //       XLALDestroyREAL8Vector( p2 );
+> //       XLALDestroyREAL8Vector( values );
+> //       XLALDestroyREAL8Vector( dvalues );
+> //       XLAL_ERROR( XLAL_EFUNC );
+> //     }
+> 
+> //     XLALDestroyREAL8Vector( rdMatchPoint );
+1614d1606
+<      XLALDestroyREAL8Vector( rdMatchPoint );
+1615a1608
+>      printf("ringdown is detached");
+1698c1691
+< XLALSimIMREOBNRv2DominantMode(
+---
+> XLALSimIMRTNSEOBDominantMode(
+1709c1702
+< {
+---
+> { printf("making NS TEOB dominant mode");
+1711c1704
+<   if ( XLALSimIMREOBNRv2Generator(hplus, hcross, NULL, phiC, deltaT, m1SI, m2SI,
+---
+>   if ( XLALSimIMRTNSEOBGenerator(hplus, hcross, NULL, phiC, deltaT, m1SI, m2SI,
+1725,1746c1718,1739
+< int
+< XLALSimIMREOBNRv2AllModes(
+<               REAL8TimeSeries **hplus,      /**<< The +-polarization waveform (returned) */
+<               REAL8TimeSeries **hcross,     /**<< The x-polarization waveform (returned) */
+<               const REAL8       phiC,       /**<< The orbital phase at the coalescence time */
+<               const REAL8       deltaT,     /**<< Sampling interval (in seconds) */
+<               const REAL8       m1SI,       /**<< First component mass (in kg) */
+<               const REAL8       m2SI,       /**<< Second component mass (in kg) */
+<               const REAL8       fLower,     /**<< Starting frequency (in Hz) */
+<               const REAL8       distance,   /**<< Distance to source (in metres) */
+<               const REAL8       inclination /**<< Inclination of the source (in radians) */
+<               )
+< {
+< 
+<   if ( XLALSimIMREOBNRv2Generator(hplus, hcross, NULL, phiC, deltaT, m1SI, m2SI,
+<               fLower, distance, inclination, 1 ) == XLAL_FAILURE )
+<   {
+<     XLAL_ERROR( XLAL_EFUNC );
+<   }
+< 
+<   return XLAL_SUCCESS;
+< }
+---
+> //int
+> //XLALSimIMRTNSEOBAllModes(
+> //              REAL8TimeSeries **hplus,      /**<< The +-polarization waveform (returned) */
+> //              REAL8TimeSeries **hcross,     /**<< The x-polarization waveform (returned) */
+> //              const REAL8       phiC,       /**<< The orbital phase at the coalescence time */
+> //              const REAL8       deltaT,     /**<< Sampling interval (in seconds) */
+> //              const REAL8       m1SI,       /**<< First component mass (in kg) */
+> //              const REAL8       m2SI,       /**<< Second component mass (in kg) */
+> //              const REAL8       fLower,     /**<< Starting frequency (in Hz) */
+> //              const REAL8       distance,   /**<< Distance to source (in metres) */
+>  //             const REAL8       inclination /**<< Inclination of the source (in radians) */
+>  //             )
+> //{
+> //
+> //  if ( XLALSimIMRTNSEOBGenerator(hplus, hcross, NULL, phiC, deltaT, m1SI, m2SI,
+> //              fLower, distance, inclination, 1 ) == XLAL_FAILURE )
+> //  {
+> //    XLAL_ERROR( XLAL_EFUNC );
+> //  }
+> //
+> //  return XLAL_SUCCESS;
+> //}
+1754,1768c1747,1761
+< SphHarmTimeSeries *XLALSimIMREOBNRv2Modes(
+<         const REAL8 phiRef,  /**< Orbital phase at coalescence (radians) */
+<         const REAL8 deltaT,  /**< Sampling interval (s) */
+<         const REAL8 m1,      /**< First component mass (kg) */
+<         const REAL8 m2,      /**< Second component mass (kg) */
+<         const REAL8 fLower,  /**< Starting GW frequency (Hz) */
+<         const REAL8 distance /**< Distance to sources (m) */
+<         )
+< {
+<   SphHarmTimeSeries *hlms = NULL;
+<   if ( XLALSimIMREOBNRv2Generator(NULL, NULL, &hlms, phiRef, deltaT, m1, m2,
+<               fLower, distance, 0., 1) == XLAL_FAILURE )
+<   {
+<     XLAL_ERROR_NULL( XLAL_EFUNC );
+<   }
+---
+> //SphHarmTimeSeries *XLALSimIMREOBNRv2Modes(
+> //        const REAL8 phiRef,  /**< Orbital phase at coalescence (radians) */
+> //        const REAL8 deltaT,  /**< Sampling interval (s) */
+> //        const REAL8 m1,      /**< First component mass (kg) */
+> //        const REAL8 m2,      /**< Second component mass (kg) */
+> //        const REAL8 fLower,  /**< Starting GW frequency (Hz) */
+> //        const REAL8 distance /**< Distance to sources (m) */
+> //        )
+> //{
+> //  SphHarmTimeSeries *hlms = NULL;
+> //  if ( XLALSimIMRTNSEOBGenerator(NULL, NULL, &hlms, phiRef, deltaT, m1, m2,
+> //              fLower, distance, 0., 1) == XLAL_FAILURE )
+> //  {
+> //    XLAL_ERROR_NULL( XLAL_EFUNC );
+> //  }
+1770,1771c1763,1764
+<   return hlms;
+< }
+---
+> //  return hlms;
+> //}

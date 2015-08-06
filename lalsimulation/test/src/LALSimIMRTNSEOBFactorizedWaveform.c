@@ -216,101 +216,13 @@ XLALCalculateTNSEOBA_nontidal( const REAL8 r,
 }
 
 
-static REAL8
-XLALCalculatek2T( const REAL8 Lambda2A,const REAL8 Lambda2B,const REAL8 m1, const REAL8 m2)
-{
-REAL8 XA,XB,k2A,k2B,k2T;
-
-XA=m1/(m1+m2);
-XB=m2/(m1+m2);
-
-k2A=3.*(XB/XA)*Lambda2A*(XA*XA*XA*XA*XA);
-k2B=3.*(XA/XB)*Lambda2B*(XB*XB*XB*XB*XB);
-
-k2T=k2A+k2B;
-
-return k2T;                       
-}
-
-static REAL8
-XLALCalculateLambda3( const REAL8 lambda2)
-{REAL8 lambda3;
- REAL8 a3,b3,c3,d3,e3,loglambda2;
-
-a3=-1.15;
-b3=1.18;
-c3=0.0251;
-d3=-0.00131;
-e3=0.0000252;
-
-loglambda2=log(lambda2);
-lambda3=exp(a3+(b3*loglambda2)+(c3*loglambda2*loglambda2)+(d3*loglambda2*loglambda2*loglambda2)+(e3*loglambda2*loglambda2*loglambda2*loglambda2));
-
-return lambda3;
-}
-
-static REAL8
-XLALCalculatek3T( const REAL8 lambda2A,const REAL8 lambda2B,const REAL8 m1, const REAL8 m2)
-{REAL8 k3T;
-REAL8 XA,XB,XA7,XB7,lambda3A,lambda3B,k3A,k3B;
-XA=m1/(m1+m2);
-XA7=XA*XA*XA*XA*XA*XA*XA;
-XB=m2/(m1+m2);
-XB7=XB*XB*XB*XB*XB*XB*XB;
-
-lambda3A=XLALCalculateLambda3(lambda2A);
-lambda3B=XLALCalculateLambda3(lambda2B);
-k3A=15.*(m2/m1)*lambda3A*XA7;
-k3B=15.*(m1/m2)*lambda3B*XB7;
-k3T=k3A+k3B;
-
-return k3T;
-}
-
-
-static REAL8
-XLALCalculateLambda4( const REAL8 lambda2)
-{REAL8 lambda4;
- REAL8 a4,b4,c4,d4,e4,loglambda2;
-
-a4=-2.45;
-b4=1.43;
-c4=0.0395;
-d4=-0.00181;
-e4=0.0000280;
-
-loglambda2=log(lambda2);
-lambda4=exp(a4+(b4*loglambda2)+(c4*loglambda2*loglambda2)+(d4*loglambda2*loglambda2*loglambda2)+(e4*loglambda2*loglambda2*loglambda2*loglambda2));
-
-return lambda4;
-}
-
-
-static REAL8
-XLALCalculatek4T( const REAL8 lambda2A,const REAL8 lambda2B,const REAL8 m1, const REAL8 m2)
-{REAL8 k4T;
-REAL8 XA,XB,XA9,XB9,lambda4A,lambda4B,k4A,k4B;
-XA=m1/(m1+m2);
-XA9=XA*XA*XA*XA*XA*XA*XA*XA*XA;
-XB=m2/(m1+m2);
-XB9=XB*XB*XB*XB*XB*XB*XB*XB*XB;
-
-lambda4A=XLALCalculateLambda4(lambda2A);
-lambda4B=XLALCalculateLambda4(lambda2B);
-k4A=105.*(m2/m1)*lambda4A*XA9;
-k4B=105.*(m1/m2)*lambda4B*XB9;
-k4T=k4A+k4B;
-
-return k4T;
-}
-
 
 static
 REAL8 XLALCalculateTNSEOBA2capTidal( const REAL8 r,
-                         const REAL8 m1, const REAL8 m2, const REAL8 Lambda2A, const REAL8 Lambda2B)
+                         const REAL8 m1, const REAL8 m2, const REAL8 Lambda2_1, const REAL8 Lambda2_2) 
 {
 
-REAL8 u,u2,XA,XB,k2A,k2B,k2T,A2captidal;
+REAL8 u,u2,X1,X2,star1k2,star2k2,totalk2,A2captidal;
 REAL8 star1alpha1_2,star2alpha1_2,star1alpha2_2,star2alpha2_2;
 REAL8 alpha1bar_2,alpha2bar_2;
 
@@ -318,136 +230,101 @@ REAL8 alpha1bar_2,alpha2bar_2;
 u=1./r;
 u2=u*u;
 
-if((Lambda2A==0)&&(Lambda2B==0))
+if((Lambda2_1==0)&&(Lambda2_2==0))
  { A2captidal =0.;
-  }
+   printf("A2captidal. The 2 lambdas are zero");
+ }
+
 else {
-    XA=m1/(m1+m2);
-    XB=m2/(m1+m2);
-  
-    k2A=3.*(XB/XA)*Lambda2A*(XA*XA*XA*XA*XA);
-    k2B=3.*(XA/XB)*Lambda2B*(XB*XB*XB*XB*XB);
-    k2T=k2A+k2B;
-  
-    star1alpha1_2=(5./2.)*XA;
-    star2alpha1_2=(5./2.)*XB;
-  
-    star1alpha2_2=((337./28.)*XA*XA)+((1./8.)*XA)+3.;
-    star2alpha2_2=((337./28.)*XB*XB)+((1./8.)*XB)+3.;
-  
-    alpha1bar_2=(k2A*star1alpha1_2+k2B*star2alpha1_2)/k2T;
-    alpha2bar_2=(k2A*star1alpha2_2+k2B*star2alpha2_2)/k2T;
-  
-  
-    A2captidal=1+(alpha1bar_2*u)+(alpha2bar_2 *u2);
-  
-    }
-   return A2captidal;
-    }
-  
-  
+X1=m1/(m1+m2);
+X2=m2/(m1+m2);
 
-static
-REAL8 XLALCalculateTNSEOBA3capTidal( const REAL8 r,
-                         const REAL8 m1, const REAL8 m2, const REAL8 Lambda2A, const REAL8 Lambda2B)
-{
+star1k2=3.*(X2/X1)*Lambda2_1*(X1*X1*X1*X1*X1);
+star2k2=3.*(X1/X2)*Lambda2_2*(X2*X2*X2*X2*X2);
+totalk2=star1k2+star2k2;
 
-REAL8 u,u2,XA,XB,XA7,XB7,k3A,k3B,k3T,A3captidal;
-REAL8 star1alpha1_3,star2alpha1_3,star1alpha2_3,star2alpha2_3; 
-REAL8 alpha1bar_3,alpha2bar_3,lambda3A,lambda3B;
+//alphaNbar_l
+
+star1alpha1_2=(5./2.)*X1;
+star2alpha1_2=(5./2.)*X2;
+
+star1alpha2_2=((337./28.)*X1*X1)+((1./8.)*X1)+3.;
+star2alpha2_2=((337./28.)*X2*X2)+((1./8.)*X2)+3.;
+
+alpha1bar_2=(star1k2*star1alpha1_2+star2k2*star2alpha1_2)/totalk2;
+alpha2bar_2=(star1k2*star1alpha2_2+star2k2*star2alpha2_2)/totalk2;
 
 
-u=1./r;
-u2=u*u;
+//printf("\n%f",star1alpha1_2);
+//printf("star1alpha1_2");
 
-if((Lambda2A==0)&&(Lambda2B==0))
- { A3captidal =0.;
-  }
-else {
-    
 
-        XA=m1/(m1+m2);
-	XA7=XA*XA*XA*XA*XA*XA*XA;
-	XB=m2/(m1+m2);
-	XB7=XB*XB*XB*XB*XB*XB*XB;
+//printf("\n%f",star1alpha2_2);
+//printf("star1alpha2_2");
 
-	lambda3A=XLALCalculateLambda3(Lambda2A);
-	lambda3B=XLALCalculateLambda3(Lambda2B);
-	k3A=15.*(m2/m1)*lambda3A*XA7;
-	k3B=15.*(m1/m2)*lambda3B*XB7;
-	k3T=k3A+k3B;
-  
-  
-    	star1alpha1_3=-2.+(15./2.)*XA;
-    	star2alpha1_3=-2.+(15./2.)*XB;
-  
-    	star1alpha2_3=8./3. -((311./24.)*XA)+((110./3.)*XA*XA);
-    	star2alpha2_3=8./3. -((311./24.)*XB)+((110./3.)*XB*XB);
-  
-   	alpha1bar_3=(k3A*star1alpha1_3+k3B*star2alpha1_3)/k3T;
-    	alpha2bar_3=(k3A*star1alpha2_3+k3B*star2alpha2_3)/k3T;
-  
-  
-       A3captidal=1+(alpha1bar_3*u)+(alpha2bar_3 *u2);
-  
-    }
-   return A3captidal;
-    }
+
+//printf("\n%f",alpha1bar_2);
+//printf("alpha1bar_2");
+
+//printf("\n%f",alpha2bar_2);
+//printf("alpha2bar_2");
+
+A2captidal=1+(alpha1bar_2*u)+(alpha2bar_2 *u2);
+}
+//printf("\n%f",A2captidal);
+//printf("A2captidal");
+return A2captidal;
+}
+
 
 
 static
-REAL8 XLALCalculateTNSEOBA_Tidal_nnlo( const REAL8 r,
-                         const REAL8 m1, const REAL8 m2, const REAL8 Lambda2A, const REAL8 Lambda2B)
+REAL8 XLALCalculateTNSEOBA2Tidal( const REAL8 r,
+                         const REAL8 m1, const REAL8 m2, const REAL8 Lambda2_1, const REAL8 Lambda2_2) 
 {
 
-REAL8 u,u3,u6,u8,u10,XA,XB,k2T,A2capTidal,k3T,A3capTidal,k4T,A_tidal;
+REAL8 u,u3,u6,X1,X2,star1k2,star2k2,totalk2,A2capTidal,A2Tidal;
 
 u=1./r;
 u3=u*u*u;
 u6=u3*u3;
-u8=u6*u*u;
-u10=u8*u*u;
-XA=m1/(m1+m2);
-XB=m2/(m1+m2);
+X1=m1/(m1+m2);
+X2=m2/(m1+m2);
 
+star1k2=3.*(X2/X1)*Lambda2_1*(X1*X1*X1*X1*X1);
+star2k2=3.*(X1/X2)*Lambda2_2*(X2*X2*X2*X2*X2);
 
+totalk2=star1k2+star2k2;
 
-k2T=XLALCalculatek2T(Lambda2A,Lambda2B,m1, m2);
-k3T=XLALCalculatek3T(Lambda2A,Lambda2B,m1, m2);
-k4T=XLALCalculatek4T(Lambda2A,Lambda2B,m1, m2);
+A2capTidal=XLALCalculateTNSEOBA2capTidal(r,m1,m2,Lambda2_1,Lambda2_2);
 
+A2Tidal=-totalk2*u6*A2capTidal; 
 
-
-A2capTidal=XLALCalculateTNSEOBA2capTidal(r,m1,m2,Lambda2A,Lambda2B);
-A3capTidal=XLALCalculateTNSEOBA3capTidal(r,m1,m2,Lambda2A,Lambda2B);
-
-A_tidal=-(k4T*u10)-(k3T*u8*A3capTidal)-(k2T*u6*A2capTidal);
-
-return A_tidal;
+return A2Tidal;
 }
-
 
 static REAL8
 XLALCalculateTNSEOBA( const REAL8 r,
-                         const REAL8 m1, const REAL8 m2, const REAL8 Lambda2A, const REAL8 Lambda2B)
+                         const REAL8 mass1, const REAL8 mass2, const REAL8 Lambda2_1, const REAL8 Lambda2_2)
 {
 //REAL8 dAtidaldu;
-REAL8 totalMass,eta,A_nonTidal,A_tidal,A;
+REAL8 totalMass,eta,A_nonTidal,A2_tidal,A;
 
-totalMass = m1 + m2;
-eta = m1 * m2 / (totalMass*totalMass);
+totalMass = mass1 + mass2;
+eta = mass1 * mass2 / (totalMass*totalMass);
 
 //printf("\n%f",r);
 //printf("at radius....");
 A_nonTidal=XLALCalculateTNSEOBA_nontidal(r,eta);
 //printf("\n%f",A_nonTidal);
 //printf("A_nonTidal....");
-A_tidal=XLALCalculateTNSEOBA_Tidal_nnlo( r,m1,m2,Lambda2A,Lambda2B);
+A2_tidal= XLALCalculateTNSEOBA2Tidal(r, mass1, mass2, Lambda2_1, Lambda2_2);
 //printf("\n%f",A2_tidal);
 //printf("A2_tidal....");
-A=A_nonTidal+A_tidal;
+A=A_nonTidal+A2_tidal;
 return A;
 }
+                         
 
 
 static
@@ -1594,7 +1471,7 @@ m2 = params->mass2;
 lambda1 = params -> lambda1;
 lambda2 = params -> lambda2;
 
-//printf("Calculating the tidal contribution to h_lm.....");
+printf("Calculating the tidal contribution to h_lm.....");
 v2=v*v;
 v3=v2*v;
 v10=v3*v3*v2*v2;
@@ -1604,7 +1481,7 @@ X2=m2/(m1+m2);
 
 if((lambda2==0.)&&(lambda1==0.))
  { 
-  //printf("Both the lambdas are zero. hlm_tidal to zero");
+  printf("Both the lambdas are zero. hlm_tidal to zero");
   *hlm_tidal=(COMPLEX16)0.;
  }
 else
