@@ -339,7 +339,7 @@ else {
     alpha2bar_2=(k2A*star1alpha2_2+k2B*star2alpha2_2)/k2T;
   
   
-    A2captidal=1+(alpha1bar_2*u)+(alpha2bar_2 *u2);
+    A2captidal=1.+(alpha1bar_2*u)+(alpha2bar_2 *u2);
   
     }
    return A2captidal;
@@ -388,11 +388,104 @@ else {
     	alpha2bar_3=(k3A*star1alpha2_3+k3B*star2alpha2_3)/k3T;
   
   
-       A3captidal=1+(alpha1bar_3*u)+(alpha2bar_3 *u2);
+       A3captidal=1.+(alpha1bar_3*u)+(alpha2bar_3 *u2);
   
     }
    return A3captidal;
     }
+
+
+
+static
+REAL8 XLALCalculatedTNSEOBA3capTidal_du( const REAL8 r,
+                         const REAL8 m1, const REAL8 m2, const REAL8 Lambda2A, const REAL8 Lambda2B)
+{
+
+REAL8 u,u2,XA,XB,XA7,XB7,k3A,k3B,k3T,dA3captidal_du;
+REAL8 star1alpha1_3,star2alpha1_3,star1alpha2_3,star2alpha2_3;
+REAL8 alpha1bar_3,alpha2bar_3,lambda3A,lambda3B;
+
+
+u=1./r;
+u2=u*u;
+
+if((Lambda2A==0)&&(Lambda2B==0))
+ { dA3captidal_du =0.;
+  }
+else {
+
+
+        XA=m1/(m1+m2);
+        XA7=XA*XA*XA*XA*XA*XA*XA;
+        XB=m2/(m1+m2);
+        XB7=XB*XB*XB*XB*XB*XB*XB;
+
+        lambda3A=XLALCalculateLambda3(Lambda2A);
+        lambda3B=XLALCalculateLambda3(Lambda2B);
+        k3A=15.*(m2/m1)*lambda3A*XA7;
+        k3B=15.*(m1/m2)*lambda3B*XB7;
+        k3T=k3A+k3B;
+
+
+        star1alpha1_3=-2.+(15./2.)*XA;
+        star2alpha1_3=-2.+(15./2.)*XB;
+
+        star1alpha2_3=8./3. -((311./24.)*XA)+((110./3.)*XA*XA);
+        star2alpha2_3=8./3. -((311./24.)*XB)+((110./3.)*XB*XB);
+
+        alpha1bar_3=(k3A*star1alpha1_3+k3B*star2alpha1_3)/k3T;
+        alpha2bar_3=(k3A*star1alpha2_3+k3B*star2alpha2_3)/k3T;
+
+
+       dA3captidal_du=(alpha1bar_3)+(2.*alpha2bar_3);
+
+    }
+   return dA3captidal_du;
+    }
+
+
+
+
+static
+REAL8 XLALCalculatedTNSEOBA2capTidal_du( const REAL8 r,
+                         const REAL8 m1, const REAL8 m2, const REAL8 Lambda2A, const REAL8 Lambda2B)
+{
+
+REAL8 u,u2,XA,XB,k2A,k2B,k2T,dA2captidal_du;
+REAL8 star1alpha1_2,star2alpha1_2,star1alpha2_2,star2alpha2_2;
+REAL8 alpha1bar_2,alpha2bar_2;
+
+
+u=1./r;
+u2=u*u;
+
+if((Lambda2A==0)&&(Lambda2B==0))
+ { dA2captidal_du =0.;
+  }
+else {
+    XA=m1/(m1+m2);
+    XB=m2/(m1+m2);
+
+    k2A=3.*(XB/XA)*Lambda2A*(XA*XA*XA*XA*XA);
+    k2B=3.*(XA/XB)*Lambda2B*(XB*XB*XB*XB*XB);
+    k2T=k2A+k2B;
+
+    star1alpha1_2=(5./2.)*XA;
+    star2alpha1_2=(5./2.)*XB;
+
+    star1alpha2_2=((337./28.)*XA*XA)+((1./8.)*XA)+3.;
+    star2alpha2_2=((337./28.)*XB*XB)+((1./8.)*XB)+3.;
+
+    alpha1bar_2=(k2A*star1alpha1_2+k2B*star2alpha1_2)/k2T;
+    alpha2bar_2=(k2A*star1alpha2_2+k2B*star2alpha2_2)/k2T;
+
+
+    dA2captidal_du=1.+(alpha1bar_2)+(2*alpha2bar_2 *u);
+
+    }
+   return dA2captidal_du;
+    }
+
 
 
 static
@@ -427,6 +520,39 @@ return A_tidal;
 }
 
 
+static
+REAL8 XLALCalculatedTNSEOBA_Tidal_nnlo_du( const REAL8 r,
+                         const REAL8 m1, const REAL8 m2, const REAL8 Lambda2A, const REAL8 Lambda2B)
+{
+
+REAL8 u,u3,u6,u8,u10,XA,XB,k2T,dA2capTidal_du,A2capTidal,A3capTidal,k3T,dA3capTidal_du,k4T,dA_tidal_du;
+
+u=1./r;
+u3=u*u*u;
+u6=u3*u3;
+u8=u6*u*u;
+u10=u8*u*u;
+XA=m1/(m1+m2);
+XB=m2/(m1+m2);
+
+
+
+k2T=XLALCalculatek2T(Lambda2A,Lambda2B,m1, m2);
+k3T=XLALCalculatek3T(Lambda2A,Lambda2B,m1, m2);
+k4T=XLALCalculatek4T(Lambda2A,Lambda2B,m1, m2);
+
+
+A2capTidal=XLALCalculateTNSEOBA2capTidal(r,m1,m2,Lambda2A,Lambda2B);
+A3capTidal=XLALCalculateTNSEOBA3capTidal(r,m1,m2,Lambda2A,Lambda2B);
+dA2capTidal_du=XLALCalculatedTNSEOBA2capTidal_du(r,m1,m2,Lambda2A,Lambda2B);
+dA3capTidal_du=XLALCalculatedTNSEOBA3capTidal_du(r,m1,m2,Lambda2A,Lambda2B);
+
+dA_tidal_du=-(k4T*u8*u*10.)-(k3T*u6*u*8.*A3capTidal)-(k3T*u8*dA3capTidal_du)-(k2T*u3*u*u*6*A2capTidal)-(k2T*u6*dA2capTidal_du);
+
+return dA_tidal_du;
+}
+
+
 static REAL8
 XLALCalculateTNSEOBA( const REAL8 r,
                          const REAL8 m1, const REAL8 m2, const REAL8 Lambda2A, const REAL8 Lambda2B)
@@ -450,70 +576,8 @@ return A;
 }
 
 
-static
-REAL8 XLALCalculateTNSEOBA2tidaldu( const REAL8 r,
-                         const REAL8 m1, const REAL8 m2, const REAL8 Lambda2_1, const REAL8 Lambda2_2)
-{
-REAL8 dAtidaldu;
-REAL8 u,u2,u3,u5,u6,u7,X1,X2,star1k2,star2k2,totalk2;
-REAL8 star1alpha1_2,star2alpha1_2,star1alpha2_2,star2alpha2_2;
-REAL8 alpha1bar_2,alpha2bar_2;
-
-
-u=1./r;
-u2=u*u;
-u3=u2*u;
-u5=u2*u3;
-u6=u3*u3;
-u7=u6*u;
-
-X1=m1/(m1+m2);
-X2=m2/(m1+m2);
-
-if((Lambda2_1==0)&&(Lambda2_2==0))
- { dAtidaldu =0.;
-  printf("lambdas are zero. I m setting the tidal dAdu to zero");
- }
-else
-{
-
-star1k2=3.*(X2/X1)*Lambda2_1*(X1*X1*X1*X1*X1);
-star2k2=3.*(X1/X2)*Lambda2_2*(X2*X2*X2*X2*X2);
-totalk2=star1k2+star2k2;
-
-//alphaNbar_l
-//
-star1alpha1_2=(5./2.)*X1;
-star2alpha1_2=(5./2.)*X2;
-//
-star1alpha2_2=((337./28.)*X1*X1)+((1./8.)*X1)+3.;
-star2alpha2_2=((337./28.)*X2*X2)+((1./8.)*X2)+3.;
-//
-alpha1bar_2=(star1k2*star1alpha1_2+star2k2*star2alpha1_2)/totalk2;
-alpha2bar_2=(star1k2*star1alpha2_2+star2k2*star2alpha2_2)/totalk2;
-
-//star1k2=3.*(X2/X1)*Lambda2_1;
-//star2k2=3.*(X1/X2)*Lambda2_2;
-
-//totalk2=star1k2+star2k2;
-
-dAtidaldu=-totalk2*(6.*u5 + alpha1bar_2*7.*u6 + 8.*alpha2bar_2*u7);
-
-
-//printf("\n%f",dAtidaldu);
-//printf("dAtidaldu");
-
-//printf("\n%f",-dAtidaldu*u2);
-//printf("dAdr");
-
-}
-
-return dAtidaldu;
-}
-
-
 //CHECK ME : dAdu need to get updated once u add tidal potential. 
-UNUSED static
+static
 REAL8 XLALCalculateEOB_Nontidal_dAdu( const REAL8 r, const REAL8 eta                     /**<< Orbital separation (in units of total mass M) */
                           //  EOBACoefficients * restrict coeffs /**<< Pre-computed coefficients for the A function */
                           )
@@ -584,24 +648,23 @@ REAL8 XLALCalculateEOB_Nontidal_dAdu( const REAL8 r, const REAL8 eta            
 
 static
 REAL8 XLALCalculateEOBdAdu( const REAL8 r,
-                         const REAL8 m1, const REAL8 m2, const REAL8 Lambda2_1, const REAL8 Lambda2_2)
+                         const REAL8 m1, const REAL8 m2, const REAL8 Lambda2A, const REAL8 Lambda2B)
 {
-REAL8 totalMass,eta,dA2tidal_du,dANonTidal_du,dA_du;
+REAL8 totalMass,eta,dA_tidal_du,dANonTidal_du,dA_du;
 
 totalMass = m1 + m2;
 eta = m1 * m2 / (totalMass*totalMass);
 
 
-dA2tidal_du=XLALCalculateTNSEOBA2tidaldu(r,m1,m2, Lambda2_1,Lambda2_2);
-//printf("\n%f",dA2tidal_du);
-//printf("dA2tidal_du");
+dA_tidal_du=XLALCalculatedTNSEOBA_Tidal_nnlo_du(r,m1,m2,Lambda2A,Lambda2B);
+
 
 dANonTidal_du=XLALCalculateEOB_Nontidal_dAdu(r, eta);
 //printf("\n%f",dANonTidal_du);
 //printf("dANonTidal_du");
 
 
-dA_du=dA2tidal_du+dANonTidal_du;
+dA_du=dA_tidal_du+dANonTidal_du;
 return dA_du;
 }
 /**
