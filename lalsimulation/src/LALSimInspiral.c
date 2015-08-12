@@ -472,6 +472,13 @@ double XLALSimInspiralGetFinalFreq(
             freqFunc = fEOBNRv2RD;
             break;
 
+         case TNSEOB:
+            /* Check that spins are zero */
+        XLALPrintError("I don't know how to calculate final freq. for this approximant, sorry!\n");
+            XLAL_ERROR(XLAL_EINVAL);
+            break;
+
+
         case SEOBNRv1:
             /* Check that the transverse spins are zero */
             if( !checkTransverseSpinsZero(S1x, S1y, S2x, S2y) )
@@ -2364,6 +2371,19 @@ int XLALSimInspiralChooseTDWaveform(
             ret = XLALSimIMREOBNRv2AllModes(hplus, hcross, phiRef, deltaT,
                     m1, m2, f_min, r, i);
             break;
+        
+        case TNSEOB:
+            /* Waveform-specific sanity checks */
+            if( !XLALSimInspiralWaveformFlagsIsDefault(waveFlags) )
+                ABORT_NONDEFAULT_WAVEFORM_FLAGS(waveFlags);
+            if( !checkSpinsZero(S1x, S1y, S1z, S2x, S2y, S2z) )
+                ABORT_NONZERO_SPINS(waveFlags);
+            if( f_ref != 0.)
+                XLALPrintWarning("XLAL Warning - %s: This approximant does use f_ref. The reference phase will be defined at coalescence.\n", __func__);
+            /* Call the waveform driver routine */
+            ret = XLALSimIMRTNSEOBDominantMode(hplus, hcross, phiRef, deltaT,
+                    m1, m2, f_min, r, i,lambda1,lambda2);
+            break;
 
         case EOBNRv2:
             /* Waveform-specific sanity checks */
@@ -3765,6 +3785,8 @@ SphHarmTimeSeries *XLALSimInspiralChooseTDModes(
                     XLALSimInspiralGetTidalOrder(waveFlags), amplitudeO,
                     phaseO, lmax);
             break;
+         
+        case TNSEOB:
         case EOBNRv2:
         case EOBNRv2HM:
             /* Waveform-specific sanity checks */
@@ -4063,6 +4085,7 @@ COMPLEX16TimeSeries *XLALSimInspiralChooseTDMode(
                     XLALSimInspiralGetTidalOrder(waveFlags), amplitudeO,
                     phaseO, l, m);
             break;
+        case TNSEOB:
         case EOBNRv2:
         case EOBNRv2HM:
             ts = XLALSimIMREOBNRv2Modes(phiRef, deltaT, m1, m2, f_min, r);
@@ -4118,6 +4141,7 @@ static const char *lalSimulationApproximantNames[] = {
     INITIALIZE_NAME(NumRelNinja2),
     INITIALIZE_NAME(Eccentricity),
     INITIALIZE_NAME(EOBNR),
+    INITIALIZE_NAME(TNSEOB),
     INITIALIZE_NAME(EOBNRv2),
     INITIALIZE_NAME(EOBNRv2HM),
     INITIALIZE_NAME(SEOBNRv1),
@@ -4618,6 +4642,7 @@ int XLALSimInspiralImplementedTDApproximants(
         case TaylorT3:
         case TaylorT4:
         case EOBNRv2:
+        case TNSEOB:
         case IMRPhenomA:
         case EOBNRv2HM:
         case SpinTaylorT2:
@@ -4718,6 +4743,7 @@ int XLALSimInspiralGetSpinSupportFromApproximant(Approximant approx){
     case IMRPhenomA:
     case EOBNRv2HM:
     case EOBNRv2:
+    case TNSEOB:
     case EOBNR:
     case EOB:
     case IMRPhenomFA:
@@ -4768,6 +4794,7 @@ int XLALSimInspiralApproximantAcceptTestGRParams(Approximant approx){
     case NumRel:
     case NumRelNinja2:
     case EOBNR:
+    case TNSEOB:
     case EOBNRv2:
     case EOBNRv2HM:
     case SEOBNRv1:
