@@ -145,6 +145,47 @@ XLALSimIMREOBCalculateNewtonianMultipole(
 }
 
 
+
+UNUSED static int
+XLALSimIMRTNSEOBCalculateNewtonianMultipole(
+                 COMPLEX16 *multipole, /**<< OUTPUT, Newtonian multipole */
+                 REAL8 x,              /**<< Dimensionless parameter \f$\equiv v^2\f$ */
+                 UNUSED REAL8 r,       /**<< Orbital separation (units of total mass M) */
+                 REAL8 phi,            /**<< Orbital phase (in radians) */
+                 UINT4  l,             /**<< Mode l */
+                 INT4  m,              /**<< Mode m */
+                 TNSEOBParams *params     /**<< Pre-computed coefficients, parameters, etc. */
+                 )
+{
+
+   INT4 xlalStatus;
+
+   COMPLEX16 y;
+
+   INT4 epsilon = (l + m) % 2;
+
+   y = 0.0;
+
+  /* Calculate the necessary Ylm */
+  xlalStatus = XLALScalarSphHarmThetaPiBy2( &y, l - epsilon, - m, phi );
+  if (xlalStatus != XLAL_SUCCESS )
+  {
+    XLAL_ERROR( XLAL_EFUNC );
+  }
+
+  /* IN TNS EOB there is no Special treatment for (2,1) and (4,4) modes, defined in Eq. 17ab of PRD84:124052 2011 */
+  
+    *multipole = params->prefixes->values[l][m] * pow( x, (REAL8)(l+epsilon)/2.0);
+ 
+    *multipole *= y;
+
+  return XLAL_SUCCESS;
+}
+
+
+
+
+
 /**
  * This function calculates the Newtonian multipole part of the
  * factorized waveform for the SEOBNRv1 model. This is defined in Eq. 4.
