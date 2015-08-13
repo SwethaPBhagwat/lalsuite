@@ -72,7 +72,8 @@ noinst_HEADERS = \
 	LALSimIMREOBFactorizedWaveform.c \
 	LALSimIMREOBHybridRingdown.c \
 	LALSimIMREOBNQCCorrection.c \
-	LALSimIMREOBNRv2.h \
+	LALSimIMRTNSEOBFactorizedWaveform.c \
+        LALSimIMREOBNRv2.h \
 	LALSimIMREOBNewtonianMultipole.c \
 	LALSimInspiralPNCoefficients.c \
 	LALSimInspiraldEnergyFlux.c \
@@ -83,6 +84,7 @@ noinst_HEADERS = \
 	LALSimIMRSpinEOBInitialConditions.c \
 	LALSimIMRSpinEOBAuxFuncs.c \
 	LALSimIMRSpinEOBFactorizedWaveform.c \
+        LALSimIMRTNSEOBFactorizedFlux.c \
 	LALSimIMRSpinEOBFactorizedFlux.c \
 	LALSimIMREOBFactorizedFlux.c \
 	LALSimNeutronStarEOSPiecewisePolytrope.c \
@@ -99,7 +101,8 @@ liblalsimulation_la_SOURCES = \
 	LALSimBurst.c \
 	LALSimBurstImg.c \
 	LALSimIMREOBNRv2.c \
-	LALSimIMRSpinAlignedEOB.c \
+	LALSimIMRTNSEOB.c \
+        LALSimIMRSpinAlignedEOB.c \
 	LALSimIMRSEOBNRv1ROMEffectiveSpin.c \
 	LALSimIMRSEOBNRv1ROMDoubleSpin.c \
 	LALSimIMRSEOBNRv2ROMEffectiveSpin.c \
