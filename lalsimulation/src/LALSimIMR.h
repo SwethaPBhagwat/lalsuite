@@ -273,6 +273,7 @@ int XLALSimIMRPhenomPCalculateModelParameters(
  *
  * All input parameters should be in SI units. Angles should be in radians.
  */
+
 int XLALSimIMRPhenomCGenerateTD(
     REAL8TimeSeries **hplus,  /**< +-polarization waveform */
     REAL8TimeSeries **hcross, /**< x-polarization waveform */
@@ -291,7 +292,24 @@ int XLALSimIMRPhenomCGenerateTD(
  * This function generates the plus and cross polarizations for the dominant
  * (2,2) mode of the EOBNRv2 approximant. This model is defined in Pan et al,
  * arXiv:1106.1021v1 [gr-qc].
- */
+ *
+ **/
+
+int XLALSimIMRTNSEOBDominantMode(
+    REAL8TimeSeries **hplus,      /**<< The +-polarization waveform (returned) */
+    REAL8TimeSeries **hcross,     /**<< The x-polarization waveform (returned) */
+    const REAL8       phiC,       /**<< The phase at the coalescence time */
+    const REAL8       deltaT,     /**<< Sampling interval (in seconds) */
+    const REAL8       m1SI,       /**<< First component mass (in kg) */
+    const REAL8       m2SI,       /**<< Second component mass (in kg) */
+    const REAL8       fLower,     /**<< Starting frequency (in Hz) */
+    const REAL8       distance,   /**<< Distance to source (in metres) */
+    const REAL8       inclination, /**<< Inclination of the source (in radians) */
+    const REAL8       lambda1,
+    const REAL8       lambda2
+);
+
+ 
 int XLALSimIMREOBNRv2DominantMode(
     REAL8TimeSeries **hplus,      /**<< The +-polarization waveform (returned) */
     REAL8TimeSeries **hcross,     /**<< The x-polarization waveform (returned) */
