@@ -503,6 +503,20 @@ int XLALSimInspiralChooseTDWaveform(
             ret = XLALSimIMREOBNRv2DominantMode(hplus, hcross, phiRef, deltaT,
                     m1, m2, f_min, r, i);
             break;
+         
+        case TNSEOB:
+            /* Waveform-specific sanity checks */
+            if( !XLALSimInspiralWaveformFlagsIsDefault(waveFlags) )
+                ABORT_NONDEFAULT_WAVEFORM_FLAGS(waveFlags);
+            if( !checkSpinsZero(S1x, S1y, S1z, S2x, S2y, S2z) )
+                ABORT_NONZERO_SPINS(waveFlags);
+            if( f_ref != 0.)
+                XLALPrintWarning("XLAL Warning - %s: This approximant does use f_ref. The reference phase will be defined at coalescence.\n", __func__);
+            /* Call the waveform driver routine */
+            ret = XLALSimIMRTNSEOBDominantMode(hplus, hcross, phiRef, deltaT,
+                    m1, m2, f_min, r, i,lambda1,lambda2);
+            break;
+
 
         /* spinning inspiral-only models */
         case SpinTaylorT2:
@@ -1896,17 +1910,6 @@ SphHarmTimeSeries *XLALSimInspiralChooseTDModes(
             }
             break;
         case TNSEOB:
-            /* Waveform-specific sanity checks */
-            if( !XLALSimInspiralWaveformFlagsIsDefault(waveFlags) )
-                ABORT_NONDEFAULT_WAVEFORM_FLAGS(waveFlags);
-            if( !checkSpinsZero(S1x, S1y, S1z, S2x, S2y, S2z) )
-                ABORT_NONZERO_SPINS(waveFlags);
-            if( f_ref != 0.)
-                XLALPrintWarning("XLAL Warning - %s: This approximant does use f_ref. The reference phase will be defined at coalescence.\n", __func__);
-            /* Call the waveform driver routine */
-            ret = XLALSimIMRTNSEOBDominantMode(hplus, hcross, phiRef, deltaT,
-                    m1, m2, f_min, r, i,lambda1,lambda2);
-            break;
 
         default:
             XLALPrintError("Cannot generate modes for this approximant\n");
@@ -2090,7 +2093,7 @@ COMPLEX16TimeSeries *XLALSimInspiralChooseTDMode(
 {
     REAL8 v0 = 1.;
     COMPLEX16TimeSeries *hlm;
-    SphHarmTimeSeries *ts;
+    SphHarmTimeSeries UNUSED *ts;
 
     /* General sanity checks that will abort */
     /*
@@ -2178,9 +2181,9 @@ COMPLEX16TimeSeries *XLALSimInspiralChooseTDMode(
         case EOBNRv2:
         case EOBNRv2HM:
         case TNSEOB:
-            ts = XLALSimIMREOBNRv2Modes(phiRef, deltaT, m1, m2, f_min, r);
-            hlm = XLALSphHarmTimeSeriesGetMode(ts, l, m);
-            break;
+          //  ts = XLALSimIMREOBNRv2Modes(phiRef, deltaT, m1, m2, f_min, r);
+          //  hlm = XLALSphHarmTimeSeriesGetMode(ts, l, m);
+          //  break;
 
         default:
             XLALPrintError("Cannot generate modes for this approximant\n");
