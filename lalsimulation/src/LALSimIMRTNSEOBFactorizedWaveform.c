@@ -36,7 +36,7 @@
 #include "LALSimInspiraldEnergyFlux.c"
 #include "LALSimIMREOBNewtonianMultipole.c" 
 #include "LALSimIMREOBNQCCorrection.c"
-
+#include "LALSimIMRTNSEOB.h"
 #ifndef _LALSIMIMRFACTORIZEDWAVEFORM_C
 #define _LALSIMIMRFACTORIZEDWAVEFORM_C
 

@@ -224,6 +224,8 @@ typedef enum {
                          * @attention Not implemented in lalsimulation. */
    EOBNRv2,		/**< UNDOCUMENTED
                          * @remarks Implemented in lalsimulation (time domain). */
+   TNSEOB,               /**< UNDOCUMENTED
+                         * @remarks in development in lalsimulation (time domain).  */
    EOBNRv2HM,		/**< UNDOCUMENTED
                          * @remarks Implemented in lalsimulation (time domain). */
    SEOBNRv1,		/**< Spin-aligned EOBNR model
