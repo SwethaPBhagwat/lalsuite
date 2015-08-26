@@ -19,12 +19,7 @@
 */
 
 /**
- * \author Craig Robinson
- *
- * \file
- *
- * \brief Functions to generate the EOBNRv2 waveforms, as defined in
- * Pan et al, PRD84, 124052(2011).
+ * \author Swetha Bhagwat
  *
  */
 
@@ -1059,10 +1054,10 @@ XLALSimIMRTNSEOBGenerator(
    tStepBack = 10000.0 * m;
    nStepBack = ceil( tStepBack / dt );
 
-   printf("\n%f",tStepBack);
-   printf("tStepBack");
-   printf("\n%u",nStepBack);
-   printf("nStepBack");
+//   printf("\n%f",tStepBack);
+//   printf("tStepBack");
+//   printf("\n%u",nStepBack);
+//   printf("nStepBack");
 
    /* Set up structures for pre-computed EOB coefficients */
    memset( &eobParams, 0, sizeof(eobParams) );
@@ -1298,12 +1293,12 @@ XLALSimIMRTNSEOBGenerator(
    hiSRndx = retLen - nStepBack;
    
 
-  fprintf(stderr,"\n%u",hiSRndx);
-  fprintf(stderr,"hiSRndx");
-   fprintf(stderr,"\n%u",retLen);
-   fprintf(stderr,"retLen");
-  fprintf(stderr,"\n%u",nStepBack);
-   fprintf(stderr,"nStepBack");
+ // fprintf(stderr,"\n%u",hiSRndx);
+//  fprintf(stderr,"hiSRndx");
+//   fprintf(stderr,"\n%u",retLen);
+//   fprintf(stderr,"retLen");
+//  fprintf(stderr,"\n%u",nStepBack);
+ //  fprintf(stderr,"nStepBack");
    /* Set up the vectors, and re-initialize everything for the high sample rate */
    rVec.length  = phiVec.length = prVec.length = pPhiVec.length = retLen;
    rVec.data    = dynamics->data+retLen;
@@ -1319,7 +1314,7 @@ XLALSimIMRTNSEOBGenerator(
 
 FILE *fp1;
 
-fp1=fopen("dump_lowRes.txt", "w");
+fp1=fopen("dynamical_variables_in_low_resolution.txt", "w");
 if(fp1 == NULL)
     exit(-1);
 int cellno;
@@ -1334,7 +1329,7 @@ REAL8 A;
 
 FILE *fpA_low;
 
-fpA_low=fopen("dumpA_lowRes.txt", "w");
+fpA_low=fopen("EOBPotential_lowResolution.txt", "w");
 if(fpA_low == NULL)
     exit(-1);
 //int cellno;
@@ -1391,7 +1386,7 @@ fclose(fp2);
 
 FILE *fp;
 
-fp=fopen("dump.txt", "w");
+fp=fopen("dynamics_highResolution.txt", "w");
 if(fp == NULL)
     exit(-1);
 //int cellno;
@@ -1406,7 +1401,7 @@ fclose(fp);
 
 FILE *fpA;
 
-fpA=fopen("A_dump.txt", "w");
+fpA=fopen("A_highResolution.txt", "w");
 if(fpA == NULL)
     exit(-1);
 //int cellno;
@@ -1503,29 +1498,29 @@ for ( cellno=0; cellno<retLen; cellno=cellno+1 )
     omegaOld = omega;
   }
   finalIdx = retLen - 1;
-  printf("\n%u",finalIdx);
-  printf("finalIdx");
- printf("\n%u", peakIdx);
-  printf("peakIdx");
- printf("Finding Peak........");
+//  printf("\n%u",finalIdx);
+//  printf("finalIdx");
+// printf("\n%u", peakIdx);
+//  printf("peakIdx");
+// printf("Finding Peak........");
   /* Stuff to find the actual peak time */
   gsl_spline    *spline = NULL;
   gsl_interp_accel *acc = NULL;
   REAL8 omegaDeriv1;
   REAL8 time1, time2;   
   REAL8 timePeak, omegaDerivMid;
-  printf("\n%f",dynamicsHi->data[peakIdx]);
-  printf("data[peak]...");
+  //printf("\n%f",dynamicsHi->data[peakIdx]);
+ // printf("data[peak]...");
     
   spline = gsl_spline_alloc( gsl_interp_cspline, retLen );
-  printf("spline done");
+ // printf("spline done");
   acc    = gsl_interp_accel_alloc();
-  printf("acc done");
+//  printf("acc done");
   time1 = dynamicsHi->data[peakIdx];
-  printf("\n%f",time1);
-  printf("time1");  
-  printf("\n%u", peakIdx);
-  printf("peakIdx");
+//  printf("\n%f",time1);
+//  printf("time1");  
+//  printf("\n%u", peakIdx);
+//  printf("peakIdx");
   gsl_spline_init( spline, dynamicsHi->data, omegaHi->data, retLen );
   omegaDeriv1 = gsl_spline_eval_deriv( spline, time1, acc );
   if ( omegaDeriv1 > 0. )

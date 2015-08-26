@@ -19,14 +19,8 @@
 
 
 /**
- * \author Craig Robinson, Yi Pan
+ * \author Swetha Bhagwat 
  *
- * \brief The functions contained within this file pre-compute the various
- * coefficients which are required for calculating the factorized waveform
- * in EOBNRv2. Note that for some of the higher modes, the coefficients
- * are changed for the generation of the waveform compared to the generation
- * of the flux. Thus we have a function which adds these additional
- * contributions to the already computed coefficients.
  */
 
 #include <math.h>
@@ -53,107 +47,6 @@
 #define ninty4by3etc 18.687902694437592603
 
 
-static inline REAL8 XLALCalculateA5( REAL8 eta );
-
-static inline REAL8 XLALCalculateA6( REAL8 eta );
-
-static
-REAL8 XLALCalculateEOBD( REAL8    r,
-                         REAL8	eta) UNUSED;
-
-
-/**
- * Calculates the a5 parameter in the A potential function in EOBNRv2
- */
-static inline
-REAL8 XLALCalculateA5( const REAL8 eta /**<< Symmetric mass ratio */
-                     )
-{
-  return - 5.82827 - 143.486 * eta + 447.045 * eta * eta;
-}
-
-/**
- * Calculates the a6 parameter in the A potential function in EOBNRv2
- */
-static inline
-REAL8 XLALCalculateA6( const REAL8 UNUSED eta /**<< Symmetric mass ratio */
-                     )
-{
-  return 184.0;
-}
-
-
-/**
- * Function to pre-compute the coefficients in the EOB A potential function
- */
-//UNUSED static
-//int XLALCalculateTNSEOBACoefficients(
-//          EOBACoefficients * const coeffs, /**<< A coefficients (populated in function) */
-//          const REAL8              eta     /**<< Symmetric mass ratio */
-//          )
-//{
-//  REAL8 eta2, eta3;
-//  REAL8 a4, a5, a6;
-
-//  eta2 = eta*eta;
-//  eta3 = eta2 * eta;
-
-  /* Note that the definitions of a5 and a6 DO NOT correspond to those in the paper */
-  /* Therefore we have to multiply the results of our a5 and a6 finctions by eta. */
-
-//  a4 = ninty4by3etc * eta;
-//  a5 = XLALCalculateA5( eta ) * eta;
-//  a6 = XLALCalculateA6( eta ) * eta;
-
-//  coeffs->n4 =  -64. + 12.*a4 + 4.*a5 + a6 + 64.*eta - 4.*eta2;
-//  coeffs->n5 = 32. -4.*a4 - a5 - 24.*eta;
-//  coeffs->d0 = 4.*a4*a4 + 4.*a4*a5 + a5*a5 - a4*a6 + 16.*a6
-//             + (32.*a4 + 16.*a5 - 8.*a6) * eta + 4.*a4*eta2 + 32.*eta3;
-//  coeffs->d1 = 4.*a4*a4 + a4*a5 + 16.*a5 + 8.*a6 + (32.*a4 - 2.*a6)*eta + 32.*eta2 + 8.*eta3;
-//  coeffs->d2 = 16.*a4 + 8.*a5 + 4.*a6 + (8.*a4 + 2.*a5)*eta + 32.*eta2;
-//  coeffs->d3 = 8.*a4 + 4.*a5 + 2.*a6 + 32.*eta - 8.*eta2;
-//  coeffs->d4 = 4.*a4 + 2.*a5 + a6 + 16.*eta - 4.*eta2;
-//  coeffs->d5 = 32. - 4.*a4 - a5 - 24. * eta;
-
-//  return XLAL_SUCCESS;
-//}
-
-/**
- * This function calculates the EOB A function which using the pre-computed
- * coefficients which should already have been calculated.
- */
-//static
-//REAL8 XLALCalculateTNSEOBA( const REAL8 r,                     /**<< Orbital separation (in units of total mass M) */
-//                         EOBACoefficients * restrict coeffs /**<< Pre-computed coefficients for the A function */
-//                       )
-//{
-
-//  REAL8 r2, r3, r4, r5;
-//  REAL8 NA, DA;
-
-  /* Note that this function uses pre-computed coefficients,
-   * and assumes they have been calculated. Since this is a static function,
-   * so only used here, I assume it is okay to neglect error checking
-   */
-
-//  r2 = r*r;
-//  r3 = r2 * r;
-// r4 = r2*r2;
-//  r5 = r4*r;
-
-
-//  NA = r4 * coeffs->n4
-//     + r5 * coeffs->n5;
-
-//  DA = coeffs->d0
-//     + r  * coeffs->d1
-//     + r2 * coeffs->d2
-//     + r3 * coeffs->d3
-//    + r4 * coeffs->d4
-//     + r5 * coeffs->d5;
-
-//  return NA/DA;i
-//
 static REAL8
 XLALCalculateTNSEOBA_nontidal( const REAL8 r, 
                          const REAL8 eta                     /**<< Orbital separation (in units of total mass M) */
@@ -165,6 +58,7 @@ XLALCalculateTNSEOBA_nontidal( const REAL8 r,
   REAL8 n1,d1,d2,d3,d4,d5;
   REAL8 a5,a6,a5tot,a6tot,a5tot2,pi2,pi4,eta2;
   REAL8 Num, Den;
+  
 
   /* Note that this function uses pre-computed coefficients,
    * and assumes they have been calculated. Since this is a static function,
@@ -177,9 +71,16 @@ XLALCalculateTNSEOBA_nontidal( const REAL8 r,
   eta2=eta*eta;
   pi2=LAL_PI*LAL_PI;
   pi4=pi2*pi2;
-  a5 =  23.5;
+  
+  REAL8 EulerGamma,a5l,a5c0,a5c1;
+  EulerGamma=0.5772156649015328606065121;
+  a5l=64./5.;
+  a5c0=-4237./60.+2275./512.*pi2+256./5.*log(2.)+128./5.*EulerGamma;
+  a5c1=-221./6.+41./32.*pi2;
+  a5=a5c0+eta*a5c1;
+  a5tot=a5+a5l*logu;
+
   a6 = -122.+147.*(1.-4.*eta);
-  a5tot  = a5  + ((64./5.)*logu);
   a6tot  = a6  + (-7004./105. - 144./5.*eta)*logu;
   a5tot2 = a5tot*a5tot;
   u2=u*u;
@@ -742,9 +643,16 @@ REAL8 XLALCalculateEOB_Nontidal_dAdu( const REAL8 r, const REAL8 eta            
   pi2=LAL_PI*LAL_PI;
   pi4=pi2*pi2;
   eta2=eta*eta;
-  a5 =  23.5;
+
+  REAL8 EulerGamma,a5l,a5c0,a5c1;
+  EulerGamma=0.5772156649015328606065121;
+  a5l=64./5.;
+  a5c0=-4237./60.+2275./512.*pi2+256./5.*log(2.)+128./5.*EulerGamma;
+  a5c1=-221./6.+41./32.*pi2;
+  a5=a5c0+eta*a5c1;
+  a5tot=a5+a5l*logu;  
+
   a6 = -122.+147.*(1.-4.*eta);
-  a5tot  = a5  + 64./5.*logu;
   a6tot  = a6  + (-7004./105. - 144./5.*eta)*logu;
   a5tot2 = a5tot*a5tot;
   u2=u*u;
@@ -839,9 +747,16 @@ REAL8 XLALCalculateEOBdAdr( const REAL8 r, const REAL8 eta                     /
   pi2=LAL_PI*LAL_PI;
   pi4=pi2*pi2;
   eta2=eta*eta;
-  a5 =  23.5;
+  
+  REAL8 EulerGamma,a5l,a5c0,a5c1;
+  EulerGamma=0.5772156649015328606065121;
+  a5l=64./5.;
+  a5c0=-4237./60.+2275./512.*pi2+256./5.*log(2.)+128./5.*EulerGamma;
+  a5c1=-221./6.+41./32.*pi2;
+  a5=a5c0+eta*a5c1;
+  a5tot=a5+a5l*logu;
+
   a6 = -122.+147.*(1.-4.*eta);
-  a5tot  = a5  + 64./5.*logu;
   a6tot  = a6  + (-7004./105. - 144./5.*eta)*logu;
   a5tot2 = a5tot*a5tot;
   u2=u*u;
@@ -915,9 +830,16 @@ REAL8 XLALCalculateEOBd2Adu2_NonTidal( const REAL8 r, const REAL8 eta           
   pi2=LAL_PI*LAL_PI;
   pi4=pi2*pi2;
   eta2=eta*eta;
-  a5 =  23.5;
+  
+  REAL8 EulerGamma,a5l,a5c0,a5c1;
+  EulerGamma=0.5772156649015328606065121;
+  a5l=64./5.;
+  a5c0=-4237./60.+2275./512.*pi2+256./5.*log(2.)+128./5.*EulerGamma;
+  a5c1=-221./6.+41./32.*pi2;
+  a5=a5c0+eta*a5c1;
+  a5tot=a5+a5l*logu;
+
   a6 = -122.+147.*(1.-4.*eta);
-  a5tot  = a5  + 64./5.*logu;
   a6tot  = a6  + (-7004./105. - 144./5.*eta)*logu;
   a5tot2 = a5tot*a5tot;
   u2=u*u;
