@@ -3565,7 +3565,10 @@ int XLALSimInspiralImplementedTDApproximants(
         case TaylorT4:
         case EOBNRv2:
         case TNSEOB:
+<<<<<<< HEAD
         case HGimri:
+=======
+>>>>>>> 6ec3937be6ebea5f390cc9e58418cef08f576d60
         case IMRPhenomA:
         case EOBNRv2HM:
         case SpinTaylorT2:
